@@ -2,11 +2,32 @@
 	"version": 2,
 	"installCommand": "npm ci --ignore-scripts",
 	"buildCommand": "npm run build:client",
-	"outputDirectory": "dist/client",
-	"rewrites": [
+	"builds": [
 		{
-			"source": "/((?!api).*)",
-			"destination": "/index.html"
+			"src": "api/[...path].js",
+			"use": "@vercel/node"
+		},
+		{
+			"src": "dist/client/**",
+			"use": "@vercel/static"
+		}
+	],
+	"routes": [
+		{
+			"src": "/api/(.*)",
+			"dest": "api/[...path].js"
+		},
+		{
+			"src": "/assets/(.*)",
+			"dest": "/dist/client/assets/$1"
+		},
+		{
+			"src": "/favicon.svg",
+			"dest": "/dist/client/favicon.svg"
+		},
+		{
+			"src": "/(.*)",
+			"dest": "/dist/client/index.html"
 		}
 	]
 }
