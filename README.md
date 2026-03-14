@@ -77,6 +77,22 @@ npx tsx test-gen.ts
 
 The output video will be saved in the `output/` directory upon completion.
 
+## ▲ Deploying Frontend To Vercel
+
+This repository includes a `vercel.json` that tells Vercel how to build and serve the frontend from `dist`.
+
+Required steps:
+
+1. Import the repository into Vercel.
+2. In Vercel project settings, add an environment variable:
+   - `VITE_API_BASE` = your backend URL (for example: `https://your-backend.example.com/api`)
+3. Redeploy.
+
+Notes:
+
+- Vercel will serve the frontend SPA routes correctly (no root 404).
+- The backend video pipeline (FFmpeg + long-running rendering) is not suited to Vercel Serverless limits; host the API on a VM/container platform and point `VITE_API_BASE` to it.
+
 ## 🛠 Tech Stack
 - **Backend/Core Orchestration:** Node.js, TypeScript, Express
 - **Video Processing:** `fluent-ffmpeg`, raw native FFmpeg process control, `canvas`
