@@ -1,0 +1,155 @@
+Starting direct video generation test...
+[Progress 3%] parsing: Analysiere Eingabe... 
+{"level":"info","time":"2026-03-13T07:46:17.906Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 1: Parsing input"}
+{"level":"info","time":"2026-03-13T07:46:17.906Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"input-parser","msg":"Generating content from topic string via LLM"}
+[Progress 8%] parsing: Tiefenanalyse des Inhalts... 
+{"level":"info","time":"2026-03-13T07:46:27.979Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","blocks":29,"msg":"Input parsed"}
+{"level":"info","time":"2026-03-13T07:46:27.979Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 2: Content analysis"}
+[Progress 15%] planning: Erstelle Storyboard (Plan-Critique-Revise)... 
+{"level":"info","time":"2026-03-13T07:46:29.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","themes":3,"concepts":3,"complexity":"intermediate","msg":"Content analysis complete"}
+{"level":"info","time":"2026-03-13T07:46:29.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 3: Multi-pass storyboard planning"}
+{"level":"info","time":"2026-03-13T07:46:29.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"storyboard-planner","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","targetDuration":120,"blocks":29,"msg":"Starting multi-pass storyboard planning"}
+[Progress 20%] rendering: Rendere Szenen parallel... 
+[Progress 20%] rendering: Szene 1/9: intro: Understanding Gravity: A Brief Overview intro: Understanding Gravity: A Brief Overview
+[Progress 27%] rendering: Szene 2/9: ken-burns: Historical Background ken-burns: Historical Background
+[Progress 33%] rendering: Szene 3/9: formel: Newton's Universal Law of Gravitation formel: Newton's Universal Law of Gravitation
+{"level":"info","time":"2026-03-13T07:46:44.967Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"reasoning","artifactType":"plan","score":7,"shouldRevise":true,"msg":"Self-critique completed"}
+{"level":"info","time":"2026-03-13T07:46:44.967Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"reasoning","iteration":1,"score":7,"shouldRevise":true,"msg":"Plan evaluation"}
+{"level":"info","time":"2026-03-13T07:46:44.967Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"storyboard-planner","iterations":1,"finalScore":7,"scenes":9,"msg":"Storyboard planning complete"}
+{"level":"info","time":"2026-03-13T07:46:44.967Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","scenes":9,"arc":"Introduction to gravity, its historical development, and scientific principles leading to real-world applications, culminating in a summary and interactive quiz.","msg":"Storyboard finalized"}
+{"level":"info","time":"2026-03-13T07:46:44.968Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","scenes":9,"msg":"Step 4: Dispatching scenes"}
+{"level":"info","time":"2026-03-13T07:46:44.969Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"78c2b5c3-66c5-4bc2-9231-1f52feb1526d","type":"formel","attempt":1,"skipQuality":false,"msg":"Executing scene 3"}
+{"level":"info","time":"2026-03-13T07:46:44.969Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"FormelAgent","scene":"Newton's Universal Law of Gravitation","msg":"Starting formel agent v3"}
+{"level":"info","time":"2026-03-13T07:46:44.971Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"f7757b2b-7515-44ba-89b4-947bbbdf8fdf","type":"intro","attempt":1,"skipQuality":true,"msg":"Executing scene 1"}
+{"level":"info","time":"2026-03-13T07:46:44.972Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"IntroOutroAgent","type":"intro","title":"Understanding Gravity: A Brief Overview","msg":"Starting intro/outro agent v3"}
+{"level":"info","time":"2026-03-13T07:46:44.974Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"00b5fdb6-ac26-41a0-aacf-a0ddae30f868","type":"ken-burns","attempt":1,"skipQuality":false,"msg":"Executing scene 2"}
+{"level":"info","time":"2026-03-13T07:46:44.975Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"KenBurnsAgent","scene":"Historical Background","msg":"Starting Ken Burns agent v3"}
+{"level":"info","time":"2026-03-13T07:46:45.953Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":188,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:46.007Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"IntroOutroAgent","sceneId":"f7757b2b-7515-44ba-89b4-947bbbdf8fdf","sceneType":"intro","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:46.062Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"f7757b2b-7515-44ba-89b4-947bbbdf8fdf","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:47.068Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":211,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:47.091Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"KenBurnsAgent","sceneId":"00b5fdb6-ac26-41a0-aacf-a0ddae30f868","sceneType":"ken-burns","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:47.158Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"00b5fdb6-ac26-41a0-aacf-a0ddae30f868","attempt":1,"msg":"Scene agent failed, using fallback"}
+[Progress 40%] rendering: Szene 4/9: zitat: Einstein's Perspective zitat: Einstein's Perspective
+[Progress 47%] rendering: Szene 5/9: infografik: Gravity's Role in the Universe infografik: Gravity's Role in the Universe
+[Progress 53%] rendering: Szene 6/9: step-by-step: Everyday Effects of Gravity step-by-step: Everyday Effects of Gravity
+{"level":"info","time":"2026-03-13T07:46:47.830Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":199,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:47.851Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"FormelAgent","sceneId":"78c2b5c3-66c5-4bc2-9231-1f52feb1526d","sceneType":"formel","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:47.913Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"78c2b5c3-66c5-4bc2-9231-1f52feb1526d","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:47.913Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"e90e83fc-a905-495f-935d-fa30c0c2d3f1","type":"zitat","attempt":1,"skipQuality":true,"msg":"Executing scene 4"}
+{"level":"info","time":"2026-03-13T07:46:47.913Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"ZitatAgent","scene":"Einstein's Perspective","msg":"Starting zitat agent v3"}
+{"level":"info","time":"2026-03-13T07:46:47.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"c25b2790-c048-4e54-9344-7650f672e5d3","type":"infografik","attempt":1,"skipQuality":false,"msg":"Executing scene 5"}
+{"level":"info","time":"2026-03-13T07:46:47.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"InfografikAgent","scene":"Gravity's Role in the Universe","msg":"Starting infografik pipeline v4"}
+{"level":"info","time":"2026-03-13T07:46:47.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"f39b69f0-abe2-4cc1-83d4-d472a4eee904","type":"step-by-step","attempt":1,"skipQuality":true,"msg":"Executing scene 6"}
+{"level":"info","time":"2026-03-13T07:46:47.914Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"StepByStepAgent","scene":"Everyday Effects of Gravity","msg":"Starting step-by-step agent v3"}
+{"level":"info","time":"2026-03-13T07:46:49.471Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":106,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:49.493Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"ZitatAgent","sceneId":"e90e83fc-a905-495f-935d-fa30c0c2d3f1","sceneType":"zitat","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:49.552Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"e90e83fc-a905-495f-935d-fa30c0c2d3f1","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:50.941Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":185,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:50.963Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"StepByStepAgent","sceneId":"f39b69f0-abe2-4cc1-83d4-d472a4eee904","sceneType":"step-by-step","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:51.028Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"f39b69f0-abe2-4cc1-83d4-d472a4eee904","attempt":1,"msg":"Scene agent failed, using fallback"}
+[Progress 60%] rendering: Szene 7/9: zusammenfassung: Summary zusammenfassung: Summary
+[Progress 67%] rendering: Szene 8/9: quiz: QUIZ: Test Your Knowledge quiz: QUIZ: Test Your Knowledge
+[Progress 73%] rendering: Szene 9/9: outro: Closing outro: Closing
+{"level":"info","time":"2026-03-13T07:46:51.834Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"InfografikAgent","keywords":5,"keyPoints":4,"msg":"Plan generated"}
+{"level":"info","time":"2026-03-13T07:46:51.834Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":261,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:51.857Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"InfografikAgent","sceneId":"c25b2790-c048-4e54-9344-7650f672e5d3","sceneType":"infografik","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:51.920Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"c25b2790-c048-4e54-9344-7650f672e5d3","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:51.920Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"dcc478fb-7ae1-405c-a3d9-4c29fab84c44","type":"zusammenfassung","attempt":1,"skipQuality":true,"msg":"Executing scene 7"}
+{"level":"info","time":"2026-03-13T07:46:51.920Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"ZusammenfassungAgent","scene":"Summary","msg":"Starting zusammenfassung agent v3"}
+{"level":"info","time":"2026-03-13T07:46:51.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"0b79030a-71e3-432a-a68a-eef8a609a08d","type":"outro","attempt":1,"skipQuality":true,"msg":"Executing scene 9"}
+{"level":"info","time":"2026-03-13T07:46:51.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"IntroOutroAgent","type":"outro","title":"Closing","msg":"Starting intro/outro agent v3"}
+{"level":"info","time":"2026-03-13T07:46:51.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"07ccbd8c-efb7-4d33-9055-a79a2fc6f278","type":"quiz","attempt":1,"skipQuality":true,"msg":"Executing scene 8"}
+{"level":"info","time":"2026-03-13T07:46:51.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"QuizAgent","scene":"QUIZ: Test Your Knowledge","msg":"Starting quiz agent v3"}
+{"level":"info","time":"2026-03-13T07:46:52.853Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":171,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:52.874Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"IntroOutroAgent","sceneId":"0b79030a-71e3-432a-a68a-eef8a609a08d","sceneType":"outro","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:52.935Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"0b79030a-71e3-432a-a68a-eef8a609a08d","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:53.566Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":127,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:53.587Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"ZusammenfassungAgent","sceneId":"dcc478fb-7ae1-405c-a3d9-4c29fab84c44","sceneType":"zusammenfassung","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:53.654Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"dcc478fb-7ae1-405c-a3d9-4c29fab84c44","attempt":1,"msg":"Scene agent failed, using fallback"}
+
+════════════════════════════════════════════════════════════════════════════════
+  📋 SCENE CONTENT DUMP — Review what the AI generated
+════════════════════════════════════════════════════════════════════════════════
+
+  ┌─ [INTRO] Understanding Gravity: A Brief Overview
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Understanding Gravity: A Brief Overview]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [KEN-BURNS] Historical Background
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Historical Background]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [FORMEL] Newton's Universal Law of Gravitation
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Newton's Universal Law of Gravitation]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [ZITAT] Einstein's Perspective
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Einstein's Perspective]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [INFOGRAFIK] Gravity's Role in the Universe
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Gravity's Role in the Universe]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [STEP-BY-STEP] Everyday Effects of Gravity
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Everyday Effects of Gravity]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [ZUSAMMENFASSUNG] Summary
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Summary]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [QUIZ] QUIZ: Test Your Knowledge
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: QUIZ: Test Your Knowledge]"
+  └────────────────────────────────────────────────────────────────────────────
+
+  ┌─ [OUTRO] Closing
+  │  Duration: 5.0s
+  │  Script: "[Scene failed: Closing]"
+  └────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════
+
+[Progress 82%] compositing: Prüfe Kohärenz und Übergänge... 
+{"level":"info","time":"2026-03-13T07:46:55.077Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"tts","textLength":583,"msg":"Generating free TTS audio"}
+{"level":"error","time":"2026-03-13T07:46:55.102Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","agent":"QuizAgent","sceneId":"07ccbd8c-efb7-4d33-9055-a79a2fc6f278","sceneType":"quiz","error":"Google TTS error: fetch failed","msg":"Agent execution failed — generating fallback output"}
+{"level":"warn","time":"2026-03-13T07:46:55.172Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","sceneId":"07ccbd8c-efb7-4d33-9055-a79a2fc6f278","attempt":1,"msg":"Scene agent failed, using fallback"}
+{"level":"info","time":"2026-03-13T07:46:55.172Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","outputs":9,"avgQuality":0,"msg":"Scene rendering complete"}
+{"level":"info","time":"2026-03-13T07:46:55.172Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 5: Coherence pass"}
+[Progress 88%] compositing: Erstelle finales Video... 
+[Progress 92%] compositing: FFmpeg-Rendering... 
+{"level":"info","time":"2026-03-13T07:47:03.193Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","coherenceScore":3,"issues":4,"msg":"Coherence reviewed"}
+{"level":"info","time":"2026-03-13T07:47:03.194Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 6: Assembling timeline"}
+{"level":"info","time":"2026-03-13T07:47:03.194Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"timeline-assembler","scenes":9,"outputs":9,"msg":"Assembling render timeline"}
+{"level":"info","time":"2026-03-13T07:47:03.195Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"timeline-assembler","totalDuration":45,"validEntries":9,"skippedScenes":0,"msg":"Timeline assembled"}
+{"level":"info","time":"2026-03-13T07:47:03.196Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","msg":"Step 6: Building final video"}
+{"level":"info","time":"2026-03-13T07:47:03.196Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","entries":9,"msg":"Building final video"}
+{"level":"info","time":"2026-03-13T07:47:06.582Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","validClips":9,"totalEntries":9,"msg":"Scene clips ready, concatenating final video"}
+{"level":"warn","time":"2026-03-13T07:47:06.613Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/f7757b2b-7515-44ba-89b4-947bbbdf8fdf/scene_f7757b2b-7515-44ba-89b4-947bbbdf8fdf_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.643Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/00b5fdb6-ac26-41a0-aacf-a0ddae30f868/scene_00b5fdb6-ac26-41a0-aacf-a0ddae30f868_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.673Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/78c2b5c3-66c5-4bc2-9231-1f52feb1526d/scene_78c2b5c3-66c5-4bc2-9231-1f52feb1526d_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.703Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/e90e83fc-a905-495f-935d-fa30c0c2d3f1/scene_e90e83fc-a905-495f-935d-fa30c0c2d3f1_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.734Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/c25b2790-c048-4e54-9344-7650f672e5d3/scene_c25b2790-c048-4e54-9344-7650f672e5d3_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.763Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/f39b69f0-abe2-4cc1-83d4-d472a4eee904/scene_f39b69f0-abe2-4cc1-83d4-d472a4eee904_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.794Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/dcc478fb-7ae1-405c-a3d9-4c29fab84c44/scene_dcc478fb-7ae1-405c-a3d9-4c29fab84c44_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.824Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/07ccbd8c-efb7-4d33-9055-a79a2fc6f278/scene_07ccbd8c-efb7-4d33-9055-a79a2fc6f278_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+{"level":"warn","time":"2026-03-13T07:47:06.854Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","clip":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/tmp/e840042a-187c-469e-8a95-2b7dc491839f/0b79030a-71e3-432a-a68a-eef8a609a08d/scene_0b79030a-71e3-432a-a68a-eef8a609a08d_final.mp4","error":"FFmpeg normalize error: ffmpeg exited with code 234: Conversion failed!\n","msg":"Failed to normalize clip, trying raw"}
+[Progress 96%] compositing: Validiere finales Video... 
+{"level":"info","time":"2026-03-13T07:47:06.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"video-validator","filePath":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4","duration":45.02322,"issues":0,"msg":"Video validation passed"}
+{"level":"info","time":"2026-03-13T07:47:06.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","outputPath":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4","metadata":{"duration":45.02322,"videoCodec":"h264","audioCodec":"aac","width":1920,"height":1080,"fileSize":167624},"msg":"Final video validated successfully"}
+{"level":"info","time":"2026-03-13T07:47:06.921Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","service":"ffmpeg","outputPath":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4","msg":"Final video built"}
+[Progress 100%] done: Video fertig! 
+
+🎉 Generation complete!
+Output Video: /Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4
+{"level":"info","time":"2026-03-13T07:47:06.940Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"video-validator","filePath":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4","duration":45.02322,"issues":0,"msg":"Video validation passed"}
+{"level":"info","time":"2026-03-13T07:47:06.940Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","duration":45.02322,"fileSize":167624,"msg":"Final video validated successfully"}
+{"level":"info","time":"2026-03-13T07:47:06.940Z","pid":2640,"hostname":"Mateos-MacBook-Air.local","module":"orchestrator","projectId":"e840042a-187c-469e-8a95-2b7dc491839f","outputPath":"/Users/mateomamaladze/.gemini/antigravity/scratch/eduvid/output/e840042a-187c-469e-8a95-2b7dc491839f/e840042a-187c-469e-8a95-2b7dc491839f_final.mp4","validScenes":9,"failedScenes":0,"msg":"Pipeline complete"}

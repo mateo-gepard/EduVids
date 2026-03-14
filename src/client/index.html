@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="EduVid AI — Erstelle professionelle Erklärvideos aus jedem Bildungsmaterial mit KI-Power." />
+  <title>EduVid AI — KI-Erklärvideo Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="site-header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">🎬</span>
+          <span class="logo-text">EduVid<span class="logo-accent">AI</span></span>
+        </div>
+        <nav class="header-nav">
+          <span class="nav-status" id="status-badge">Bereit</span>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="hero-section">
+        <div class="hero-glow"></div>
+        <h1 class="hero-title">
+          Verwandle jedes Thema in ein<br />
+          <span class="gradient-text">brillantes Erklärvideo</span>
+        </h1>
+        <p class="hero-subtitle">
+          PDF hochladen, Thema eingeben, Parameter einstellen — unsere KI erstellt ein
+          perfekt strukturiertes Video mit Infografiken, Quizzes und mehr.
+        </p>
+      </section>
+
+      <!-- Input Section -->
+      <section id="input-section" class="card-section">
+        <div class="section-card glass-card">
+          <h2 class="section-title">
+            <span class="section-icon">📝</span>
+            Eingabe
+          </h2>
+
+          <form id="project-form" class="input-form">
+            <!-- File Upload Zone -->
+            <div class="upload-zone" id="upload-zone">
+              <div class="upload-icon">📄</div>
+              <p class="upload-text">PDF oder Bild hierher ziehen</p>
+              <p class="upload-hint">oder klicken zum Auswählen</p>
+              <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp" hidden />
+              <div class="upload-selected" id="upload-selected" style="display:none;">
+                <span id="upload-filename"></span>
+                <button type="button" class="btn-remove" id="upload-remove">✕</button>
+              </div>
+            </div>
+
+            <div class="divider-text"><span>oder</span></div>
+
+            <!-- Text Input -->
+            <div class="form-group">
+              <label for="text-input" class="form-label">Thema oder Text eingeben</label>
+              <textarea
+                id="text-input"
+                class="form-textarea"
+                placeholder="z.B. '2. Weltkrieg für Q12 Bayern' oder füge deinen Hefteintrag ein..."
+                rows="4"
+              ></textarea>
+            </div>
+
+            <!-- Parameters -->
+            <div class="params-grid">
+              <div class="form-group">
+                <label for="duration-slider" class="form-label">
+                  Videolänge: <span id="duration-value" class="param-value">5 min</span>
+                </label>
+                <input type="range" id="duration-slider" class="form-range" min="60" max="1800" step="30" value="300" />
+                <div class="range-labels">
+                  <span>1 min</span>
+                  <span>30 min</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Schwierigkeitsgrad</label>
+                <div class="difficulty-selector" id="difficulty-selector">
+                  <button type="button" class="diff-btn" data-value="overview">
+                    <span class="diff-icon">🌊</span>
+                    <span class="diff-label">Überblick</span>
+                  </button>
+                  <button type="button" class="diff-btn active" data-value="standard">
+                    <span class="diff-icon">⚖️</span>
+                    <span class="diff-label">Standard</span>
+                  </button>
+                  <button type="button" class="diff-btn" data-value="deep">
+                    <span class="diff-icon">🔬</span>
+                    <span class="diff-label">Deep Dive</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="language-select" class="form-label">Sprache</label>
+                <select id="language-select" class="form-select">
+                  <option value="de" selected>🇩🇪 Deutsch</option>
+                  <option value="en">🇬🇧 English</option>
+                  <option value="fr">🇫🇷 Français</option>
+                  <option value="es">🇪🇸 Español</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-primary btn-generate" id="btn-generate">
+              <span class="btn-icon">✨</span>
+              <span class="btn-text">Video generieren</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Storyboard Section (hidden initially) -->
+      <section id="storyboard-section" class="card-section" style="display:none;">
+        <div class="section-card glass-card">
+          <h2 class="section-title">
+            <span class="section-icon">🎯</span>
+            Storyboard
+          </h2>
+          <div class="storyboard-timeline" id="storyboard-timeline"></div>
+        </div>
+      </section>
+
+      <!-- Progress Section (hidden initially) -->
+      <section id="progress-section" class="card-section" style="display:none;">
+        <div class="section-card glass-card">
+          <h2 class="section-title">
+            <span class="section-icon">⚡</span>
+            Rendering
+          </h2>
+          <div class="progress-container">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="progress-info">
+              <span id="progress-message">Warte auf Start...</span>
+              <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-scenes" id="progress-scenes"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Video Player Section (hidden initially) -->
+      <section id="player-section" class="card-section" style="display:none;">
+        <div class="section-card glass-card">
+          <h2 class="section-title">
+            <span class="section-icon">🎉</span>
+            Dein Video
+          </h2>
+          <div class="video-container">
+            <video id="video-player" controls class="video-player"></video>
+          </div>
+          <div class="video-actions">
+            <a id="download-btn" class="btn-primary btn-download" href="#" download>
+              <span class="btn-icon">⬇️</span>
+              <span class="btn-text">Video herunterladen</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="site-footer">
+      <p>EduVid AI — Powered by KI 🧠</p>
+    </footer>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

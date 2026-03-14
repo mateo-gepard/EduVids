@@ -1,0 +1,17 @@
+[
+  {
+    "id": "aab92e8d-bde1-49f7-be0b-357bcbed5bc9",
+    "status": "parsing",
+    "input": {
+      "text": "Der Zweite Weltkrieg (1939–1945): Ursachen, Verlauf und Folgen. Behandle den Aufstieg des Nationalsozialismus, die wichtigsten Schlachten und Wendepunkte (Stalingrad, D-Day, Midway), den Holocaust, die Rolle der Alliierten, die Kapitulation Deutschlands und Japans, sowie die Gründung der Vereinten Nationen und die Neuordnung Europas nach dem Krieg. Erkläre die politischen, wirtschaftlichen und gesellschaftlichen Auswirkungen, die bis heute nachwirken.",
+      "params": {
+        "duration": 600,
+        "durationMinutes": 10,
+        "difficulty": "advanced",
+        "language": "de"
+      }
+    },
+    "createdAt": "2026-03-14T09:03:31.987Z",
+    "updatedAt": "2026-03-14T09:03:31.990Z"
+  }
+]
