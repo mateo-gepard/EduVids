@@ -81,6 +81,8 @@ The output video will be saved in the `output/` directory upon completion.
 
 This repository includes a `vercel.json` that tells Vercel how to build and serve the frontend from `dist`.
 
+It intentionally runs a frontend-only build (`npm run build:client`) so Vercel does not need to compile the backend pipeline during deploy.
+
 Required steps:
 
 1. Import the repository into Vercel.
