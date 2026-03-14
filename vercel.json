@@ -18,16 +18,11 @@
 			"dest": "api/[...path].js"
 		},
 		{
-			"src": "/assets/(.*)",
-			"dest": "/dist/client/assets/$1"
-		},
-		{
-			"src": "/favicon.svg",
-			"dest": "/dist/client/favicon.svg"
+			"handle": "filesystem"
 		},
 		{
 			"src": "/(.*)",
-			"dest": "/dist/client/index.html"
+			"dest": "/index.html"
 		}
 	]
 }
