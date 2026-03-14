@@ -1,7 +1,7 @@
 [
   {
     "id": "aab92e8d-bde1-49f7-be0b-357bcbed5bc9",
-    "status": "parsing",
+    "status": "done",
     "input": {
       "text": "Der Zweite Weltkrieg (1939–1945): Ursachen, Verlauf und Folgen. Behandle den Aufstieg des Nationalsozialismus, die wichtigsten Schlachten und Wendepunkte (Stalingrad, D-Day, Midway), den Holocaust, die Rolle der Alliierten, die Kapitulation Deutschlands und Japans, sowie die Gründung der Vereinten Nationen und die Neuordnung Europas nach dem Krieg. Erkläre die politischen, wirtschaftlichen und gesellschaftlichen Auswirkungen, die bis heute nachwirken.",
       "params": {
@@ -11,7 +11,484 @@
         "language": "de"
       }
     },
-    "createdAt": "2026-03-14T09:03:31.987Z",
-    "updatedAt": "2026-03-14T09:03:31.990Z"
+    "createdAt": "2026-03-14T09:03:31.989Z",
+    "updatedAt": "2026-03-14T09:30:05.483Z",
+    "contentBlocks": [
+      {
+        "type": "paragraph",
+        "content": "Der Zweite Weltkrieg (1939–1945): Ursachen, Verlauf und Folgen. Behandle den Aufstieg des Nationalsozialismus, die wichtigsten Schlachten und Wendepunkte (Stalingrad, D-Day, Midway), den Holocaust, die Rolle der Alliierten, die Kapitulation Deutschlands und Japans, sowie die Gründung der Vereinten Nationen und die Neuordnung Europas nach dem Krieg. Erkläre die politischen, wirtschaftlichen und gesellschaftlichen Auswirkungen, die bis heute nachwirken."
+      }
+    ],
+    "storyboard": {
+      "projectId": "aab92e8d-bde1-49f7-be0b-357bcbed5bc9",
+      "scenes": [
+        {
+          "id": "7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1",
+          "order": 0,
+          "type": "intro",
+          "title": "Der Zweite Weltkrieg: Ursachen und Auswirkungen",
+          "content": "Einführung in die Thematik des Zweiten Weltkriegs, die globalen Auswirkungen und die historische Bedeutung.",
+          "timeBudget": 18,
+          "visualHints": "Titelkarte mit dramatischer Musik und historischen Bildern"
+        },
+        {
+          "id": "8a6c46e1-396b-4651-9815-8fcf2728259f",
+          "order": 1,
+          "type": "ken-burns",
+          "title": "Der Aufstieg des Nationalsozialismus",
+          "content": "Historische Bilder des Aufstiegs der NSDAP in Deutschland, mit Schwerpunkt auf der politischen und gesellschaftlichen Lage der 1930er Jahre.",
+          "timeBudget": 71,
+          "visualHints": "Bilder von NS-Paraden, Hitler-Reden, und gesellschaftlichen Szenen"
+        },
+        {
+          "id": "f191d06f-59e6-496d-8ea0-98827d0c3a43",
+          "order": 2,
+          "type": "infografik",
+          "title": "Wichtige Schlachten und Wendepunkte",
+          "content": "Schrittweise Enthüllung der Schlachten von Stalingrad, D-Day und Midway, ihre strategische Bedeutung und Auswirkungen auf den Kriegsverlauf.",
+          "timeBudget": 106,
+          "visualHints": "Interaktive Karte mit Schlachtpositionen und Bewegungen"
+        },
+        {
+          "id": "1e76db93-4fe2-4ff0-915b-cf0e3c4d038e",
+          "order": 3,
+          "type": "ken-burns",
+          "title": "Der Holocaust",
+          "content": "Erschütternde Bilder und Erklärungen zu den Gräueltaten des Holocausts und ihrer Bedeutung für die Menschheit.",
+          "timeBudget": 71,
+          "visualHints": "Bilder von Konzentrationslagern, Überlebenden und Gedenkstätten"
+        },
+        {
+          "id": "e9225c50-f846-49f0-b9b2-93c9747e16f3",
+          "order": 4,
+          "type": "step-by-step",
+          "title": "Die Rolle der Alliierten",
+          "content": "Analyse der strategischen Kooperation der Alliierten und deren Beitrag zur Niederlage der Achsenmächte.",
+          "timeBudget": 106,
+          "visualHints": "Diagramme der Alliierten-Streitkräfte und ihrer Führer"
+        },
+        {
+          "id": "f0d9d68e-b4fe-4bf0-bd16-068f0105dbe3",
+          "order": 5,
+          "type": "ken-burns",
+          "title": "Kapitulation Deutschlands und Japans",
+          "content": "Bilder der Kapitulationszeremonien und die historischen Momente des Kriegsendes in Europa und Asien.",
+          "timeBudget": 47,
+          "visualHints": "Fotos von Kapitulationsdokumenten und Feierlichkeiten"
+        },
+        {
+          "id": "493814f5-7903-4dd8-91ce-f7a4955f63ba",
+          "order": 6,
+          "type": "zitat",
+          "title": "Gründung der Vereinten Nationen",
+          "content": "Dramatische Präsentation eines bedeutenden Zitats zur Gründung der UNO und deren Ziele für den Weltfrieden.",
+          "timeBudget": 24,
+          "visualHints": "Textzitat mit UN-Logo und Friedensbildern"
+        },
+        {
+          "id": "d4a42a7f-9e7b-4e93-bbb2-0d49a5f6ae1f",
+          "order": 7,
+          "type": "infografik",
+          "title": "Neuordnung Europas nach dem Krieg",
+          "content": "Erklärung der politischen und territorialen Veränderungen in Europa nach 1945 und deren langfristige Auswirkungen.",
+          "timeBudget": 71,
+          "visualHints": "Europakarte mit neuen Grenzen und politischen Blöcken"
+        },
+        {
+          "id": "c2336a38-5e0b-446f-82b3-3d3ed7655df3",
+          "order": 8,
+          "type": "quiz",
+          "title": "Politische, wirtschaftliche und gesellschaftliche Auswirkungen",
+          "content": "Interaktive Frage zu den langfristigen Auswirkungen des Zweiten Weltkriegs mit Erklärungen zu den Antworten.",
+          "timeBudget": 35,
+          "visualHints": "Multiple-Choice-Frage mit Grafiken zu wirtschaftlichen Daten"
+        },
+        {
+          "id": "28db1a22-6087-4b4a-bba7-296ba417d119",
+          "order": 9,
+          "type": "zusammenfassung",
+          "title": "Kernpunkte des Zweiten Weltkriegs",
+          "content": "Kompakte Zusammenfassung der wichtigsten Ereignisse und ihrer Bedeutung für die heutige Welt.",
+          "timeBudget": 35,
+          "visualHints": "Stichpunkte und ikonische Bilder"
+        },
+        {
+          "id": "aaf61f5a-e642-4d7b-aea8-e51f433b3d61",
+          "order": 10,
+          "type": "outro",
+          "title": "Abschluss",
+          "content": "Zusammenfassung der Key Takeaways und Einladung zur weiteren Auseinandersetzung mit dem Thema.",
+          "timeBudget": 18,
+          "visualHints": "Abschließende Musik und Verweise auf weiterführende Literatur"
+        }
+      ],
+      "totalDuration": 600,
+      "narrativeArc": "Einführung → Aufbau → Höhepunkt → Zusammenfassung → Abschluss"
+    },
+    "agentOutputs": [
+      {
+        "sceneId": "7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1",
+        "sceneType": "intro",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1/intro_audio.mp3",
+          "durationSeconds": 22.224
+        },
+        "visuals": [
+          {
+            "type": "video",
+            "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1/scene_final.mp4",
+            "durationSeconds": 22.224
+          }
+        ],
+        "script": "Tauchen Sie ein in die komplexe Welt des Zweiten Weltkriegs. Entdecken Sie seine globalen Auswirkungen, von politischen Umwälzungen bis zu technologischen Fortschritten. Erfahren Sie, warum dieses historische Ereignis die Welt nachhaltig veränderte und seine Bedeutung bis heute spürbar ist.",
+        "durationSeconds": 22.224,
+        "segments": [
+          {
+            "text": "Tauchen Sie ein in die komplexe Welt des Zweiten Weltkriegs.",
+            "estimatedStart": 0,
+            "estimatedEnd": 4.4,
+            "visualCue": "title_appear",
+            "index": 0
+          },
+          {
+            "text": "Entdecken Sie seine globalen Auswirkungen,",
+            "estimatedStart": 4.4,
+            "estimatedEnd": 8.6,
+            "visualCue": "subtitle_reveal",
+            "index": 1
+          },
+          {
+            "text": "von politischen Umwälzungen bis zu technologischen Fortschritten.",
+            "estimatedStart": 8.6,
+            "estimatedEnd": 13.4,
+            "visualCue": "badge_show",
+            "index": 2
+          },
+          {
+            "text": "Erfahren Sie, warum dieses historische Ereignis die Welt nachhaltig veränderte",
+            "estimatedStart": 13.4,
+            "estimatedEnd": 18.2,
+            "visualCue": "subtitle_reveal",
+            "index": 3
+          },
+          {
+            "text": "und seine Bedeutung bis heute spürbar ist.",
+            "estimatedStart": 18.2,
+            "estimatedEnd": 22.224,
+            "visualCue": "fade_out",
+            "index": 4
+          }
+        ]
+      },
+      {
+        "sceneId": "8a6c46e1-396b-4651-9815-8fcf2728259f",
+        "sceneType": "ken-burns",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/8a6c46e1-396b-4651-9815-8fcf2728259f/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Der Aufstieg des Nationalsozialismus]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "f191d06f-59e6-496d-8ea0-98827d0c3a43",
+        "sceneType": "infografik",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/f191d06f-59e6-496d-8ea0-98827d0c3a43/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Wichtige Schlachten und Wendepunkte]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "1e76db93-4fe2-4ff0-915b-cf0e3c4d038e",
+        "sceneType": "ken-burns",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/1e76db93-4fe2-4ff0-915b-cf0e3c4d038e/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Der Holocaust]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "e9225c50-f846-49f0-b9b2-93c9747e16f3",
+        "sceneType": "step-by-step",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/e9225c50-f846-49f0-b9b2-93c9747e16f3/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Die Rolle der Alliierten]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "f0d9d68e-b4fe-4bf0-bd16-068f0105dbe3",
+        "sceneType": "ken-burns",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/f0d9d68e-b4fe-4bf0-bd16-068f0105dbe3/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Kapitulation Deutschlands und Japans]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "493814f5-7903-4dd8-91ce-f7a4955f63ba",
+        "sceneType": "zitat",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/493814f5-7903-4dd8-91ce-f7a4955f63ba_retry2/zitat_audio.mp3",
+          "durationSeconds": 15.576
+        },
+        "visuals": [
+          {
+            "type": "video",
+            "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/493814f5-7903-4dd8-91ce-f7a4955f63ba_retry2/scene_final.mp4",
+            "durationSeconds": 15.576
+          }
+        ],
+        "script": "In einer Welt, die von Chaos und Konflikten zerrissen war, erhob sich eine Stimme der Hoffnung und Einheit. Die Gründung der Vereinten Nationen markierte einen Wendepunkt in der Geschichte der Menschheit.",
+        "durationSeconds": 15.576,
+        "segments": [
+          {
+            "text": "In einer Welt, die von Chaos und Konflikten zerrissen war,",
+            "estimatedStart": 0,
+            "estimatedEnd": 3,
+            "visualCue": "introduce",
+            "index": 0
+          },
+          {
+            "text": "erhob sich eine Stimme der Hoffnung und Einheit.",
+            "estimatedStart": 3,
+            "estimatedEnd": 6,
+            "visualCue": "quote_reveal",
+            "index": 1
+          },
+          {
+            "text": "Die Gründung der Vereinten Nationen",
+            "estimatedStart": 6,
+            "estimatedEnd": 10,
+            "visualCue": "quote_reveal",
+            "index": 2
+          },
+          {
+            "text": "markierte einen Wendepunkt in der Geschichte der Menschheit.",
+            "estimatedStart": 10,
+            "estimatedEnd": 13,
+            "visualCue": "quote_reveal",
+            "index": 3
+          },
+          {
+            "text": "",
+            "estimatedStart": 13,
+            "estimatedEnd": 15.576,
+            "visualCue": "fade_out",
+            "index": 4
+          }
+        ]
+      },
+      {
+        "sceneId": "d4a42a7f-9e7b-4e93-bbb2-0d49a5f6ae1f",
+        "sceneType": "infografik",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/d4a42a7f-9e7b-4e93-bbb2-0d49a5f6ae1f/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Neuordnung Europas nach dem Krieg]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "c2336a38-5e0b-446f-82b3-3d3ed7655df3",
+        "sceneType": "quiz",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/c2336a38-5e0b-446f-82b3-3d3ed7655df3/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Politische, wirtschaftliche und gesellschaftliche Auswirkungen]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "28db1a22-6087-4b4a-bba7-296ba417d119",
+        "sceneType": "zusammenfassung",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/28db1a22-6087-4b4a-bba7-296ba417d119/fallback_audio.mp3",
+          "durationSeconds": 5
+        },
+        "visuals": [],
+        "script": "[Scene failed: Kernpunkte des Zweiten Weltkriegs]",
+        "durationSeconds": 5
+      },
+      {
+        "sceneId": "aaf61f5a-e642-4d7b-aea8-e51f433b3d61",
+        "sceneType": "outro",
+        "audio": {
+          "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aaf61f5a-e642-4d7b-aea8-e51f433b3d61/outro_audio.mp3",
+          "durationSeconds": 17.568
+        },
+        "visuals": [
+          {
+            "type": "video",
+            "filePath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aaf61f5a-e642-4d7b-aea8-e51f433b3d61/scene_final.mp4",
+            "durationSeconds": 17.568
+          }
+        ],
+        "script": "Wir haben die wichtigsten Punkte zusammengefasst. Nun liegt es an Ihnen, tiefer einzutauchen. Entdecken Sie weitere Details, erweitern Sie Ihr Wissen und gestalten Sie Ihre Zukunft aktiv mit. Bleiben Sie neugierig und engagiert!",
+        "durationSeconds": 17.568,
+        "segments": [
+          {
+            "text": "Wir haben die wichtigsten Punkte zusammengefasst.",
+            "estimatedStart": 0,
+            "estimatedEnd": 3.8,
+            "visualCue": "summary_title",
+            "index": 0
+          },
+          {
+            "text": "Nun liegt es an Ihnen, tiefer einzutauchen.",
+            "estimatedStart": 3.8,
+            "estimatedEnd": 6.8,
+            "visualCue": "bullet:0",
+            "index": 1
+          },
+          {
+            "text": "Entdecken Sie weitere Details, erweitern Sie Ihr Wissen",
+            "estimatedStart": 6.8,
+            "estimatedEnd": 11,
+            "visualCue": "bullet:1",
+            "index": 2
+          },
+          {
+            "text": "und gestalten Sie Ihre Zukunft aktiv mit.",
+            "estimatedStart": 11,
+            "estimatedEnd": 14,
+            "visualCue": "bullet:2",
+            "index": 3
+          },
+          {
+            "text": "Bleiben Sie neugierig und engagiert!",
+            "estimatedStart": 14,
+            "estimatedEnd": 17.568,
+            "visualCue": "closing_message",
+            "index": 4
+          }
+        ]
+      }
+    ],
+    "timeline": {
+      "projectId": "aab92e8d-bde1-49f7-be0b-357bcbed5bc9",
+      "entries": [
+        {
+          "order": 0,
+          "sceneId": "7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1/intro_audio.mp3",
+          "visualPaths": [
+            "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/7a0f592a-31f6-47a2-bcdf-8d6c8cf202c1/scene_final.mp4"
+          ],
+          "startTime": 0,
+          "endTime": 22.224,
+          "transition": "fade-black"
+        },
+        {
+          "order": 1,
+          "sceneId": "8a6c46e1-396b-4651-9815-8fcf2728259f",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/8a6c46e1-396b-4651-9815-8fcf2728259f/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 22.224,
+          "endTime": 27.224,
+          "transition": "cut"
+        },
+        {
+          "order": 2,
+          "sceneId": "f191d06f-59e6-496d-8ea0-98827d0c3a43",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/f191d06f-59e6-496d-8ea0-98827d0c3a43/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 27.224,
+          "endTime": 32.224000000000004,
+          "transition": "cut"
+        },
+        {
+          "order": 3,
+          "sceneId": "1e76db93-4fe2-4ff0-915b-cf0e3c4d038e",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/1e76db93-4fe2-4ff0-915b-cf0e3c4d038e/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 32.224000000000004,
+          "endTime": 37.224000000000004,
+          "transition": "cut"
+        },
+        {
+          "order": 4,
+          "sceneId": "e9225c50-f846-49f0-b9b2-93c9747e16f3",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/e9225c50-f846-49f0-b9b2-93c9747e16f3/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 37.224000000000004,
+          "endTime": 42.224000000000004,
+          "transition": "cut"
+        },
+        {
+          "order": 5,
+          "sceneId": "f0d9d68e-b4fe-4bf0-bd16-068f0105dbe3",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/f0d9d68e-b4fe-4bf0-bd16-068f0105dbe3/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 42.224000000000004,
+          "endTime": 47.224000000000004,
+          "transition": "cut"
+        },
+        {
+          "order": 6,
+          "sceneId": "493814f5-7903-4dd8-91ce-f7a4955f63ba",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/493814f5-7903-4dd8-91ce-f7a4955f63ba_retry2/zitat_audio.mp3",
+          "visualPaths": [
+            "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/493814f5-7903-4dd8-91ce-f7a4955f63ba_retry2/scene_final.mp4"
+          ],
+          "startTime": 47.224000000000004,
+          "endTime": 62.800000000000004,
+          "transition": "cut"
+        },
+        {
+          "order": 7,
+          "sceneId": "d4a42a7f-9e7b-4e93-bbb2-0d49a5f6ae1f",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/d4a42a7f-9e7b-4e93-bbb2-0d49a5f6ae1f/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 62.800000000000004,
+          "endTime": 67.80000000000001,
+          "transition": "cut"
+        },
+        {
+          "order": 8,
+          "sceneId": "c2336a38-5e0b-446f-82b3-3d3ed7655df3",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/c2336a38-5e0b-446f-82b3-3d3ed7655df3/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 67.80000000000001,
+          "endTime": 72.80000000000001,
+          "transition": "cut"
+        },
+        {
+          "order": 9,
+          "sceneId": "28db1a22-6087-4b4a-bba7-296ba417d119",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/28db1a22-6087-4b4a-bba7-296ba417d119/fallback_audio.mp3",
+          "visualPaths": [],
+          "startTime": 72.80000000000001,
+          "endTime": 77.80000000000001,
+          "transition": "crossfade"
+        },
+        {
+          "order": 10,
+          "sceneId": "aaf61f5a-e642-4d7b-aea8-e51f433b3d61",
+          "audioPath": "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aaf61f5a-e642-4d7b-aea8-e51f433b3d61/outro_audio.mp3",
+          "visualPaths": [
+            "/Users/mateomamaladze/Desktop/eduvids/tmp/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aaf61f5a-e642-4d7b-aea8-e51f433b3d61/scene_final.mp4"
+          ],
+          "startTime": 77.80000000000001,
+          "endTime": 95.36800000000001,
+          "transition": "fade-black"
+        }
+      ],
+      "totalDuration": 95.36800000000001,
+      "outputPath": "/Users/mateomamaladze/Desktop/eduvids/output/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aab92e8d-bde1-49f7-be0b-357bcbed5bc9_final.mp4"
+    },
+    "outputPath": "/Users/mateomamaladze/Desktop/eduvids/output/aab92e8d-bde1-49f7-be0b-357bcbed5bc9/aab92e8d-bde1-49f7-be0b-357bcbed5bc9_final.mp4"
   }
 ]

@@ -2,24 +2,7 @@
 // EduVid AI — Frontend Application
 // ═══════════════════════════════════════════════════════════════════════════
 
-const API_BASE = (import.meta.env?.VITE_API_BASE || '/api').replace(/\/$/, '');
-
-async function readJsonSafely(res) {
-  const body = await res.text();
-  if (!body) return null;
-  try {
-    return JSON.parse(body);
-  } catch {
-    return { error: body };
-  }
-}
-
-function apiHint(status) {
-  if (status === 404) {
-    return `API endpoint not found at ${API_BASE}. Set VITE_API_BASE to your backend URL (for example: https://your-backend.example.com/api).`;
-  }
-  return null;
-}
+const API_BASE = '/api';
 
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {
@@ -154,15 +137,11 @@ async function createProject() {
     });
 
     if (!res.ok) {
-      const err = await readJsonSafely(res);
-      const hint = apiHint(res.status);
-      throw new Error((err && err.error) || hint || 'Projekt konnte nicht erstellt werden');
+      const err = await res.json();
+      throw new Error(err.error || 'Projekt konnte nicht erstellt werden');
     }
 
-    const data = await readJsonSafely(res);
-    if (!data?.projectId) {
-      throw new Error('Ungueltige API-Antwort: projectId fehlt.');
-    }
+    const data = await res.json();
     state.projectId = data.projectId;
 
     // Start listening for progress
@@ -250,17 +229,7 @@ async function pollProjectStatus(projectId) {
   const poll = setInterval(async () => {
     try {
       const res = await fetch(`${API_BASE}/projects/${projectId}`);
-      if (!res.ok) {
-        const hint = apiHint(res.status);
-        if (hint) {
-          clearInterval(poll);
-          onProjectError(hint);
-          return;
-        }
-      }
-
-      const project = await readJsonSafely(res);
-      if (!project) return;
+      const project = await res.json();
 
       if (project.status === 'done') {
         clearInterval(poll);
