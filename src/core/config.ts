@@ -25,9 +25,10 @@ export const config = {
   elevenlabsApiKey: process.env.ELEVENLABS_API_KEY || '',
   elevenlabsVoiceId: process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM',
 
+  // ── Image Search (Pixabay) ─────────────────────────────────────────────
+  pixabayApiKey: process.env.PIXABAY_API_KEY || '',
+
   // ── Google APIs ────────────────────────────────────────────────────────
-  googleSearchKey: process.env.GOOGLE_CUSTOM_SEARCH_KEY || '',
-  googleSearchCx: process.env.GOOGLE_CUSTOM_SEARCH_CX || '',
   googleVisionKey: process.env.GOOGLE_CLOUD_VISION_KEY || '',
 
   // ── Paths ──────────────────────────────────────────────────────────────
@@ -71,10 +72,13 @@ export function validateConfig(): void {
 
   const warnings: string[] = [];
   if (!config.elevenlabsApiKey) {
-    warnings.push('ELEVENLABS_API_KEY not set — falling back to Google TTS (unofficial, not for production)');
+    warnings.push('ELEVENLABS_API_KEY not set — TTS will fall back to OpenAI TTS (requires OPENAI_API_KEY)');
   }
-  if (!config.googleSearchKey) {
-    warnings.push('GOOGLE_CUSTOM_SEARCH_KEY not set — image search scenes will use fallback layout');
+  if (!config.pixabayApiKey) {
+    warnings.push('PIXABAY_API_KEY not set — images will use generated placeholders');
+  }
+  if (config.allowedOrigin === 'http://localhost:5173') {
+    warnings.push('ALLOWED_ORIGIN is still the default localhost:5173 — set it to your Vercel domain for production');
   }
   if (warnings.length > 0) {
     console.warn('[config] Warnings:\n' + warnings.map(w => `  ⚠  ${w}`).join('\n'));

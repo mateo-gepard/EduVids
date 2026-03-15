@@ -79,7 +79,7 @@ export async function planStoryboard(
     .join('\n\n');
   const contentSummary = fullSummary.slice(0, 6000);
 
-  const targetDuration = params.durationMinutes * 60;
+  const targetDuration = params.duration;
 
   log.info({ projectId, targetDuration, blocks: contentBlocks.length }, 'Starting multi-pass storyboard planning');
 
@@ -286,6 +286,15 @@ function buildStoryboard(
     timeBudget: Math.max(5, Math.round(s.timeBudget * scaleFactor)), // minimum 5s per scene
     visualHints: s.visualHints,
   }));
+
+  // Post-normalization: distribute rounding drift across scenes so sum === targetDuration
+  const actualSum = scenes.reduce((sum, s) => sum + s.timeBudget, 0);
+  const drift = actualSum - targetDuration;
+  if (drift !== 0 && scenes.length > 0) {
+    // Apply drift correction to the longest scene (least perceptible change)
+    const longestIdx = scenes.reduce((maxI, s, i, arr) => s.timeBudget > arr[maxI].timeBudget ? i : maxI, 0);
+    scenes[longestIdx].timeBudget = Math.max(5, scenes[longestIdx].timeBudget - drift);
+  }
 
   return {
     projectId,

@@ -18,8 +18,8 @@ EduVid AI orchestrates video creation through a modular, multi-pass pipeline. Th
    - Each scene is delegated to a specialized `BaseAgent` subclass.
    - These agents execute autonomously to perform:
      1. **Script Generation**: Writing a localized narration script tailored to their scene type.
-     2. **TTS Synthesis**: Calling the `google-tts-api`. (Note: The pipeline employs a robust chunking algorithm (`getAllAudioUrls`) and buffer-concatenation to bypass Google's remote SSL packet-length limits for texts >200 chars).
-     3. **Visual Curation**: Agents like `KenBurnsAgent` interface with external generic Image Search APIs (e.g., Unsplash/Google Custom Search) to fetch contextual background media.
+     2. **TTS Synthesis**: Converting the script to high-quality speech via ElevenLabs (with OpenAI TTS fallback).
+     3. **Visual Curation**: Agents like `KenBurnsAgent` search Pixabay for contextual background images.
      4. **Timeline Mapping**: Combining the generated script and TTS duration, the `narrationSegmenter` creates an `AnimationTimeline` syncing words to specific visual beats.
 
 3. **Frame Rendering (`renderer.ts`)**:
@@ -48,7 +48,9 @@ EduVid leverages bespoke agents to handle complex visual layouts. Each agent inh
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18+)
 - [FFmpeg](https://ffmpeg.org/) (Must be installed and available in your system `PATH`)
-- An OpenAI API Key
+- OpenAI API Key (required — powers LLM + TTS fallback)
+- ElevenLabs API Key (recommended — high-quality voices)
+- Pixabay API Key (free — for real images: https://pixabay.com/api/docs/)
 
 ### Installation
 
@@ -57,29 +59,43 @@ EduVid leverages bespoke agents to handle complex visual layouts. Each agent inh
    npm install
    ```
 
-2. Create a `.env` file in the root directory and add your OpenAI key:
-   ```env
-   OPENAI_API_KEY=your_api_key_here
+2. Copy `.env.example` to `.env` and fill in your API keys:
+   ```bash
+   cp .env.example .env
    ```
 
-### Usage
-
-**Running the Web Interface (Frontend & Backend)**
+### Local Development
 ```bash
 npm run dev
 ```
+This starts both the Express backend (port 3001) and Vite frontend (port 5173).
 
-**Testing Video Generation Directly**
-You can run a direct CLI test to generate a video without using the frontend:
-```bash
-npx tsx test-gen.ts
+### Production Deployment (Vercel + Railway)
+
+The app is deployed as a **split architecture**:
+- **Vercel** serves the Vite SPA frontend
+- **Railway** runs the Express/FFmpeg/Canvas backend via Docker
+
+**Railway environment variables:**
+```
+OPENAI_API_KEY=sk-...
+ELEVENLABS_API_KEY=...
+PIXABAY_API_KEY=...
+ALLOWED_ORIGIN=https://your-app.vercel.app
 ```
 
-The output video will be saved in the `output/` directory upon completion.
+**Vercel environment variable:**
+```
+VITE_API_URL=https://your-app.up.railway.app/api
+```
+
+Both platforms auto-deploy from GitHub pushes. Railway detects the Dockerfile automatically.
 
 ## 🛠 Tech Stack
 - **Backend/Core Orchestration:** Node.js, TypeScript, Express
 - **Video Processing:** `fluent-ffmpeg`, raw native FFmpeg process control, `canvas`
-- **AI/NLP:** OpenAI API
-- **Voice Synthesis:** `google-tts-api`
+- **AI/NLP:** OpenAI API (GPT-4o)
+- **Voice Synthesis:** ElevenLabs → OpenAI TTS fallback
+- **Image Search:** Pixabay API (free, 100 req/min)
 - **Frontend UI:** Vite, Vanilla JS
+- **Deployment:** Vercel (frontend) + Railway (backend Docker)

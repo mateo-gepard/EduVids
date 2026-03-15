@@ -256,10 +256,31 @@ function onProjectDone(projectId) {
   progressPercent.textContent = '100%';
 
   // Show video player
-  videoPlayer.src = `${API_BASE}/projects/${projectId}/download`;
-  downloadBtn.href = `${API_BASE}/projects/${projectId}/download`;
-  showSection('player');
+  const videoUrl = `${API_BASE}/projects/${projectId}/download`;
+  videoPlayer.src = videoUrl;
 
+  // Cross-origin download: fetch as blob, then create object URL
+  downloadBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    downloadBtn.querySelector('.btn-text').textContent = 'Download läuft...';
+    try {
+      const res = await fetch(videoUrl);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `eduvid_${projectId}.mp4`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error('Download error:', err);
+      // Fallback: just navigate to the URL
+      window.open(videoUrl, '_blank');
+    } finally {
+      downloadBtn.querySelector('.btn-text').textContent = 'Video herunterladen';
+    }
+  }, { once: true });
+
+  showSection('player');
   resetGenerateButton();
 }
 

@@ -219,6 +219,27 @@ router.get('/:id/progress', (req, res) => {
 
   const projectId = req.params.id;
 
+  // Immediately send current project state so the client doesn't miss past events
+  // (e.g. after page refresh or SSE reconnect).
+  const project = projectStore.get(projectId);
+  if (project) {
+    const initialEvent: ProgressEvent = {
+      projectId,
+      status: project.status,
+      message: project.status === 'error'
+        ? (project.error || 'Pipeline failed')
+        : `Current status: ${project.status}`,
+      progress: project.status === 'done' ? 100 : project.status === 'error' ? -1 : 0,
+    };
+    res.write(`data: ${JSON.stringify(initialEvent)}\n\n`);
+
+    // If already terminal, close immediately.
+    if (project.status === 'done' || project.status === 'error') {
+      res.end();
+      return;
+    }
+  }
+
   const listener = (event: ProgressEvent) => {
     res.write(`data: ${JSON.stringify(event)}\n\n`);
     if (event.status === 'done' || event.status === 'error') {

@@ -221,6 +221,16 @@ function fallbackSegmentation(
   durationSeconds: number,
   sceneType: SceneType
 ): NarrationSegment[] {
+  if (!script) {
+    return [{
+      text: '',
+      estimatedStart: 0,
+      estimatedEnd: durationSeconds,
+      visualCue: 'narrate',
+      index: 0,
+    }];
+  }
+
   // Split by sentence endings
   const sentences = script
     .split(/(?<=[.!?])\s+/)

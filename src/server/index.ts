@@ -18,15 +18,20 @@ const startedAt = Date.now();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: config.allowedOrigin }));
+const allowedOrigins = config.allowedOrigin.split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // ── API Key Authentication (optional) ────────────────────────────────────────
 // When API_KEY is set in env, require all /api/ requests to include X-API-Key header.
 if (config.apiKey) {
   app.use('/api', (req, res, next) => {
-    // Allow health check without auth
+    // Exempt endpoints that can't send custom headers (SSE EventSource, <video> tag)
     if (req.path === '/health') return next();
+    if (req.path.endsWith('/progress')) return next();
+    if (req.path.endsWith('/download')) return next();
 
     const providedKey = req.headers['x-api-key'];
     if (providedKey !== config.apiKey) {

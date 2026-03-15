@@ -1,0 +1,11 @@
+node_modules
+output
+tmp
+dist
+.git
+*.md
+.env
+.env.*
+vitest.config.ts
+test-gen.ts
+data/projects.json

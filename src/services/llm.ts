@@ -52,6 +52,139 @@ function isRetryableError(error: unknown): boolean {
   return false;
 }
 
+// ── Mock JSON for testing ────────────────────────────────────────────────────
+
+function getMockJSON(prompt: string): string {
+  const p = prompt.toLowerCase();
+
+  // ── Orchestrator-level conditions (match first) ────────────────────────────
+
+  if (p.includes('storyboard') || p.includes('scenes')) {
+    return JSON.stringify({
+      narrativeArc: "introduction → explanation → summary",
+      totalDuration: 120,
+      scenes: [
+        { type: "intro", title: "Introduction", content: "Welcome to this educational video about the topic.", timeBudget: 15 },
+        { type: "infografik", title: "Main Concept", content: "The core concept explained with visual aids.", timeBudget: 40 },
+        { type: "step-by-step", title: "How It Works", content: "Step-by-step breakdown of the process.", timeBudget: 35 },
+        { type: "quiz", title: "Quick Check", content: "Test your understanding with a question.", timeBudget: 15 },
+        { type: "outro", title: "Summary", content: "Key takeaways and closing remarks.", timeBudget: 15 },
+      ],
+    });
+  }
+
+  if (p.includes('critique') || p.includes('review') || p.includes('score')) {
+    return JSON.stringify({ score: 8, strengths: ["Good structure"], weaknesses: ["Could add more examples"], suggestions: ["Add a fun fact scene"] });
+  }
+
+  if (p.includes('coherence') || p.includes('transition')) {
+    return JSON.stringify({ score: 8, issues: [], suggestions: ["Smooth transitions overall"] });
+  }
+
+  if (p.includes('analyze') && p.includes('content')) {
+    return JSON.stringify({ themes: ["education"], keyConcepts: ["concept1", "concept2"], complexity: "medium", suggestedApproach: "visual", keyTerms: ["term1", "term2"] });
+  }
+
+  // ── Agent-specific conditions (BEFORE generic narration/segment) ───────────
+
+  if (p.includes('infografi') || p.includes('diagram')) {
+    return JSON.stringify({
+      script: "Let's visualize this concept with an infographic.",
+      keywords: ["concept1", "concept2", "concept3"],
+      imageSearchQueries: ["educational diagram", "concept visualization"],
+      keyPoints: [
+        { label: "Point A", description: "First key point explained" },
+        { label: "Point B", description: "Second key point explained" },
+      ],
+    });
+  }
+
+  if (p.includes('step') || p.includes('schritt')) {
+    return JSON.stringify({
+      script: "Follow these steps to understand the process.",
+      title: "How It Works",
+      steps: [
+        { title: "Step 1", content: "First action to take" },
+        { title: "Step 2", content: "Second action to take" },
+      ],
+    });
+  }
+
+  if (p.includes('quiz') || p.includes('frage')) {
+    return JSON.stringify({
+      question: "What is the main concept?",
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      correctIndex: 0,
+      explanation: "Option A is correct because it directly addresses the core idea.",
+      introScript: "Let's test your knowledge with a quick question.",
+      revealScript: "The correct answer is Option A. Great job if you got it right!",
+    });
+  }
+
+  if (p.includes('ken-burns') || p.includes('ken burns')) {
+    return JSON.stringify({
+      script: "A fascinating look at this topic through imagery.",
+      imageQuery: "educational diagram",
+      captions: [{ text: "Key point", timestamp: 2 }],
+      era: "2020s",
+      direction: "zoom-in",
+    });
+  }
+
+  if (p.includes('formel') || p.includes('formula')) {
+    return JSON.stringify({
+      script: "Let's break down this important formula step by step.",
+      title: "Energy-Mass Equivalence",
+      formula: "E = mc²",
+      explanation: "This equation shows that energy and mass are interchangeable.",
+      derivationSteps: ["Start with rest energy", "Apply Lorentz factor", "Simplify to E = mc²"],
+    });
+  }
+
+  if (p.includes('zitat') || p.includes('quote')) {
+    return JSON.stringify({
+      script: "Consider this powerful quote about knowledge.",
+      quote: "Knowledge is power.",
+      author: "Francis Bacon",
+      context: "A timeless observation about the value of education.",
+    });
+  }
+
+  if (p.includes('zusammenfassung') || p.includes('takeaway') || p.includes('outro')) {
+    return JSON.stringify({
+      script: "Let's review the key takeaways from this video.",
+      title: "Summary",
+      keyTakeaways: [
+        { icon: "✅", text: "Key point 1" },
+        { icon: "✅", text: "Key point 2" },
+      ],
+      closingMessage: "Thanks for watching!",
+    });
+  }
+
+  if (p.includes('funfact') || p.includes('fun fact') || p.includes('fun_fact')) {
+    return JSON.stringify({
+      script: "Here's a surprising fact you might not know.",
+      header: "Did You Know?",
+      fact: "An interesting piece of trivia about this topic.",
+      emoji: "💡",
+    });
+  }
+
+  // ── Generic segment/narration (AFTER agent-specific) ───────────────────────
+
+  if (p.includes('segment') || p.includes('narration')) {
+    return JSON.stringify({ segments: [
+      { text: "Opening line.", visualCue: "establish_scene", estimatedStart: 0, estimatedEnd: 3 },
+      { text: "Main explanation.", visualCue: "explain_concept", estimatedStart: 3, estimatedEnd: 8 },
+      { text: "Closing thought.", visualCue: "summarize", estimatedStart: 8, estimatedEnd: 10 },
+    ]});
+  }
+
+  // Generic fallback
+  return JSON.stringify({ script: "Mock content for testing purposes.", title: "Mock Scene", content: "This is placeholder content." });
+}
+
 // ── Provider-agnostic interface ──────────────────────────────────────────────
 
 export interface LLMOptions {
@@ -71,6 +204,10 @@ export async function generateText(
 ): Promise<string> {
   if (config.mockMode) {
     log.info('Mock mode: returning placeholder text');
+    // If JSON is expected, return valid mock JSON so downstream parsing doesn't break
+    if (options.jsonMode || options.systemPrompt?.toLowerCase().includes('json')) {
+      return getMockJSON(prompt);
+    }
     return `[MOCK LLM RESPONSE for prompt: ${prompt.slice(0, 80)}...]`;
   }
 

@@ -190,5 +190,10 @@ export async function renderAndEncodeStream(
     await Promise.race([encodePromise, timeoutPromise]);
   } finally {
     if (timeoutHandle) clearTimeout(timeoutHandle);
+    // Ensure FFmpeg is killed if it's still running (prevents zombie processes)
+    if (!ffmpeg.killed) {
+      ffmpeg.stdin.destroy();
+      ffmpeg.kill('SIGKILL');
+    }
   }
 }

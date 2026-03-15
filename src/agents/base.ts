@@ -12,7 +12,7 @@ const execFileAsync = promisify(execFile);
 import { createLogger } from '../core/logger.js';
 import { generateText, generateJSON } from '../services/llm.js';
 import { textToSpeech } from '../services/tts.js';
-import { searchImages, downloadImage } from '../services/imageSearch.js';
+import { searchImages, downloadImage, generatePlaceholderImage } from '../services/imageSearch.js';
 import { renderAndEncodeStream } from '../rendering/streamEncoder.js';
 import { probeAudioDuration } from '../services/videoValidator.js';
 import { AnimationTimeline, buildSegmentTimeline, type AnimatedProperties, secondsToFrames, frameToTime } from '../rendering/animations.js';
@@ -227,15 +227,24 @@ IMPORTANT: The script must cover EVERY visual element — every point, every ste
   ): Promise<{ results: ImageResult[]; localPath: string | null }> {
     try {
       const results = await searchImages(query, count);
-      if (results.length === 0) return { results: [], localPath: null };
+      if (results.length === 0) {
+        // No API configured or no results — generate a canvas placeholder
+        const placeholderPath = await generatePlaceholderImage(query, outputDir, filename);
+        return { results: [], localPath: placeholderPath };
+      }
       const localPath = await downloadImage(results[0].url, outputDir, filename);
       return { results, localPath };
     } catch (error) {
       this.log.warn(
         { query, error: (error as Error).message },
-        'Image search/download failed, continuing without image'
+        'Image search/download failed, generating placeholder'
       );
-      return { results: [], localPath: null };
+      try {
+        const placeholderPath = await generatePlaceholderImage(query, outputDir, filename);
+        return { results: [], localPath: placeholderPath };
+      } catch {
+        return { results: [], localPath: null };
+      }
     }
   }
 
