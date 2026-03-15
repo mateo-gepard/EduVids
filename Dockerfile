@@ -29,7 +29,7 @@ COPY src/ ./src/
 
 # Build TypeScript server + Vite client
 RUN npx tsc
-RUN npx vite build src/client
+RUN npx vite build
 
 # ── Production Stage ────────────────────────────────────────────
 FROM node:20-slim AS production

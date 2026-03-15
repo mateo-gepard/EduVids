@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "tsx watch src/server/index.ts",
-    "dev:client": "vite src/client",
-    "build": "tsc && vite build src/client",
+    "dev:client": "vite",
+    "build": "tsc && vite build",
     "start": "node dist/server/index.js",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest --config vitest.config.ts"

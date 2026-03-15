@@ -76,8 +76,13 @@ app.use('/api/projects', projectRoutes);
 
 // ── Static files (production) ────────────────────────────────────────────────
 // In production, serve the Vite-built client. In dev, Vite dev server handles it.
-const clientDir = path.resolve(__dirname, '../../dist/client');
-if (fs.existsSync(clientDir)) {
+// Try dist/client (config-driven) then dist/ (default Vite output) as fallback.
+const clientCandidates = [
+  path.resolve(__dirname, '../../dist/client'),
+  path.resolve(__dirname, '../../dist'),
+];
+const clientDir = clientCandidates.find(d => fs.existsSync(path.join(d, 'index.html')));
+if (clientDir) {
   app.use(express.static(clientDir));
   // SPA fallback: serve index.html for any non-API route
   app.get('*', (req, res, next) => {
