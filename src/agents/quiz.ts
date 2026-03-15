@@ -7,6 +7,7 @@ import { BaseAgent } from './base.js';
 import { renderQuizLayout, type QuizLayoutData } from '../rendering/layouts.js';
 import { drawSegmentIndicator } from '../rendering/renderer.js';
 import { getActiveSegment, findSegmentByCue } from '../rendering/narrationSegmenter.js';
+import type { CueKeyword } from '../rendering/sttSync.js';
 import type { SubAgentInput, SubAgentOutput, SceneType } from '../core/types.js';
 
 interface QuizPlan {
@@ -26,8 +27,8 @@ export class QuizAgent extends BaseAgent {
 
     // Generate quiz via LLM
     const isGerman = input.language === 'de';
-    const plan = await this.generatePlanJSON<QuizPlan>(
-      isGerman
+    const directed = this.getDirectedScript(input);
+    let planPrompt = isGerman
         ? `Erstelle eine Quiz-Frage für ein Erklärvideo.
 
 Thema: ${input.sceneSpec.content}
@@ -59,19 +60,30 @@ Respond as JSON:
   "explanation": "Explanation of why Option A is correct",
   "introScript": "Text that reads the question aloud and presents EACH option individually (50-60 words)",
   "revealScript": "Text that reveals the answer and explains it thoroughly (40-50 words)"
-}`,
+}`;
+    if (directed) planPrompt = this.withDirectedScript(planPrompt, directed, isGerman);
+    const plan = await this.generatePlanJSON<QuizPlan>(
+      planPrompt,
       isGerman
         ? 'Du bist ein Experte für interaktive Bildungsquizze.'
         : 'You are an expert in interactive educational quizzes.',
     );
 
-    // Combine scripts for TTS
-    const fullScript = `${plan.introScript} ... ${isGerman ? 'Drei, zwei, eins!' : 'Three, two, one!'} ... ${plan.revealScript}`;
+    // Combine scripts for TTS (directed script replaces the combined text if present)
+    const countdownPhrase = isGerman ? 'Drei, zwei, eins!' : 'Three, two, one!';
+    const fullScript = directed || `${plan.introScript} ... ${countdownPhrase} ... ${plan.revealScript}`;
     const audio = await this.synthesizeSpeech(fullScript, input.workDir, 'quiz_audio', input.voiceId);
     const duration = audio.durationSeconds;
 
-    // ── Segment-driven timeline ──
-    const segments = await this.segmentScript(fullScript, duration, 'quiz', input.language);
+    // ── STT-synced segmentation: real audio timestamps ──
+    const cueKeywords: CueKeyword[] = [
+      { visualCue: 'read_question', triggerPhrase: plan.question.split(' ').slice(0, 4).join(' ') },
+      { visualCue: 'show_options', triggerPhrase: plan.options[0].split(' ').slice(0, 2).join(' ') },
+      { visualCue: 'countdown', triggerPhrase: isGerman ? 'Drei' : 'Three' },
+      { visualCue: 'reveal_answer', triggerPhrase: plan.revealScript.split(' ').slice(0, 3).join(' ') },
+      { visualCue: 'explain', triggerPhrase: plan.explanation.split(' ').slice(0, 3).join(' ') },
+    ];
+    const { segments } = await this.segmentScriptWithSTT(fullScript, audio.filePath, duration, cueKeywords);
     const timeline = this.buildTimelineFromSegments(segments, duration);
 
     // Pre-find phase boundaries from segments

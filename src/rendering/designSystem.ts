@@ -5,7 +5,7 @@
 
 export const CANVAS_WIDTH = 1920;
 export const CANVAS_HEIGHT = 1080;
-export const FPS = 30;
+export const FPS = 24;
 
 // ── Color Palettes ───────────────────────────────────────────────────────────
 
@@ -86,6 +86,7 @@ export const sceneColors: Record<string, SceneColorScheme> = {
   'quiz':            { accent: '#D97706', accentLight: '#FEF3C7', accentBg: 'rgba(217,119,6,0.06)',   bgGradientStart: '#FFFFFF', bgGradientEnd: '#FFFBEB', cardBorder: '#FDE68A', badgeBg: '#FEF3C7', badgeText: '#B45309', gradientStart: '#1A150A', gradientEnd: '#2D250F', accentGlow: 'rgba(217,119,6,0.35)' },
   'funfact':         { accent: '#EA580C', accentLight: '#FFEDD5', accentBg: 'rgba(234,88,12,0.06)',   bgGradientStart: '#FFFFFF', bgGradientEnd: '#FFF7ED', cardBorder: '#FED7AA', badgeBg: '#FFEDD5', badgeText: '#C2410C', gradientStart: '#1A0F0A', gradientEnd: '#2D1A0F', accentGlow: 'rgba(234,88,12,0.35)' },
   'zusammenfassung': { accent: '#7C3AED', accentLight: '#EDE9FE', accentBg: 'rgba(124,58,237,0.06)', bgGradientStart: '#FFFFFF', bgGradientEnd: '#FAF5FF', cardBorder: '#DDD6FE', badgeBg: '#EDE9FE', badgeText: '#6D28D9', gradientStart: '#1A0F2E', gradientEnd: '#2D1A4E', accentGlow: 'rgba(124,58,237,0.35)' },
+  'diagram':          { accent: '#0891B2', accentLight: '#CFFAFE', accentBg: 'rgba(8,145,178,0.06)',   bgGradientStart: '#FFFFFF', bgGradientEnd: '#ECFEFF', cardBorder: '#A5F3FC', badgeBg: '#CFFAFE', badgeText: '#0E7490', gradientStart: '#0F172A', gradientEnd: '#0C3547', accentGlow: 'rgba(8,145,178,0.35)' },
 };
 
 // ── Typography ───────────────────────────────────────────────────────────────

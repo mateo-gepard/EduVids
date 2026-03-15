@@ -16,17 +16,18 @@ const log = createLogger({ module: 'storyboard-planner' });
 
 const SCENE_TYPES: SceneType[] = [
   'intro', 'infografik', 'ken-burns', 'formel', 'zitat',
-  'step-by-step', 'quiz', 'funfact', 'zusammenfassung', 'outro',
+  'step-by-step', 'quiz', 'funfact', 'zusammenfassung', 'diagram', 'outro',
 ];
 
 const QUALITY_CRITERIA = [
   'Does the storyboard cover all key content from the input without gaps?',
-  'Is the scene variety good? No more than 2 adjacent scenes of the same type.',
-  'Does the pacing feel natural? Time budgets should reflect content density.',
+  'Is there good scene variety? The same type may repeat if content warrants it, but avoid long runs of identical types.',
+  'Does the pacing feel natural? Complex topics (formulas, step-by-step) should get MORE time; lighter scenes (ken-burns, funfact) should be shorter.',
   'Is there a clear narrative arc: intro → build → climax → summary → outro?',
   'Do scene types match their content? (e.g., formulas for math, quotes for quotes)',
   'Is the total duration within ±10% of the target?',
   'Are the difficulty and depth appropriate for the target audience?',
+  'Do time budgets vary significantly? NOT every scene the same length — range from 15s to 120s+.',
 ];
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -134,12 +135,13 @@ ${SCENE_TYPES.map(t => `- **${t}**: ${getSceneDescription(t, true)}`).join('\n')
 
 ## Regeln:
 1. IMMER mit "intro" beginnen und mit "outro" enden
-2. Keine zwei gleichen Szenentypen direkt hintereinander
+2. Gleiche Szenentypen dürfen mehrfach vorkommen wenn der Inhalt es erfordert (z.B. zwei verschiedene Formeln = zwei formel-Szenen)
 3. Zeitbudgets müssen in Summe = Zieldauer (±10%)
 4. Mindestens eine "quiz" oder "step-by-step" Szene
 5. Narrative Bogen: Einführung → Aufbau → Höhepunkt → Zusammenfassung → Abschluss
 6. WICHTIG: Jede Szene bekommt GENUG Content um das Zeitbudget komplett zu füllen
 7. Der content-Text für jede Szene muss ALLE Details enthalten die der Sub-Agent braucht
+8. ZEITBUDGETS MÜSSEN STARK VARIIEREN: Komplexe Themen (formel, step-by-step, infografik) bekommen 60-120s, leichte Szenen (ken-burns, funfact, zitat) nur 15-30s
 
 ## Output als JSON:
 {
@@ -162,13 +164,14 @@ ${SCENE_TYPES.map(t => `- **${t}**: ${getSceneDescription(t, false)}`).join('\n'
 
 ## Rules:
 1. ALWAYS start with "intro" and end with "outro"
-2. No two adjacent scenes of the same type
+2. Same scene types MAY appear multiple times if content warrants it (e.g., two different formulas = two formel scenes)
 3. Time budgets must sum to target duration (±10%)
 4. At least one "quiz" or "step-by-step" scene for interactivity
 5. Narrative arc: Introduction → Build-up → Climax/Details → Summary → Closing
 6. "zusammenfassung" ideally before "outro"
 7. IMPORTANT: Each scene gets ENOUGH content to completely fill its time budget
 8. The content text for each scene must include ALL details the sub-agent needs to create a comprehensive narration
+9. TIME BUDGETS MUST VARY SIGNIFICANTLY: Complex topics (formel, step-by-step, infografik) get 60-120s, lighter scenes (ken-burns, funfact, zitat) only 15-30s
 
 ## Output as JSON:
 {
@@ -283,7 +286,7 @@ function buildStoryboard(
     type: s.type as SceneType, // safe: validRawScenes only contains valid types
     title: s.title,
     content: s.content,
-    timeBudget: Math.max(5, Math.round(s.timeBudget * scaleFactor)), // minimum 5s per scene
+    timeBudget: Math.max(8, Math.round(s.timeBudget * scaleFactor)), // minimum 8s per scene
     visualHints: s.visualHints,
   }));
 
@@ -293,7 +296,7 @@ function buildStoryboard(
   if (drift !== 0 && scenes.length > 0) {
     // Apply drift correction to the longest scene (least perceptible change)
     const longestIdx = scenes.reduce((maxI, s, i, arr) => s.timeBudget > arr[maxI].timeBudget ? i : maxI, 0);
-    scenes[longestIdx].timeBudget = Math.max(5, scenes[longestIdx].timeBudget - drift);
+    scenes[longestIdx].timeBudget = Math.max(8, scenes[longestIdx].timeBudget - drift);
   }
 
   return {
@@ -319,6 +322,7 @@ function getSceneDescription(type: SceneType, isGerman: boolean = false): string
       'quiz': 'Interaktive Quiz-Frage mit Optionen und Erklärung (20-40s)',
       'funfact': 'Überraschender Fakt spielerisch präsentiert (10-25s)',
       'zusammenfassung': 'Kompakte Zusammenfassung der Kernpunkte (15-40s)',
+      'diagram': 'Animiertes Diagramm: Flussdiagramm, Mindmap, Venn, Organigramm, Zyklus, Pyramide, Gantt, Fischgräte, Scatter/Line-Graph, Swimlane, Baumdiagramm (20-60s)',
     };
     return descriptions[type] || type;
   }
@@ -333,6 +337,7 @@ function getSceneDescription(type: SceneType, isGerman: boolean = false): string
     'quiz': 'Interactive quiz question with options and explanation (20-40s)',
     'funfact': 'Surprising fact playfully presented (10-25s)',
     'zusammenfassung': 'Compact summary of key points (15-40s)',
+    'diagram': 'Animated diagram: flowchart, mind map, Venn, org chart, cycle, pyramid, Gantt, fishbone, scatter/line graph, swimlane, tree diagram (20-60s)',
   };
   return descriptions[type] || type;
 }

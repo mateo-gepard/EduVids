@@ -6,6 +6,10 @@
 import fs from 'fs/promises';
 import ffmpegLib from 'fluent-ffmpeg';
 import { createLogger } from './logger.js';
+import { getFfmpegPath, getFfprobePath } from './ffmpegPath.js';
+
+ffmpegLib.setFfmpegPath(getFfmpegPath());
+ffmpegLib.setFfprobePath(getFfprobePath());
 
 const log = createLogger({ module: 'utils' });
 

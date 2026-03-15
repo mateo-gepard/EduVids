@@ -88,6 +88,7 @@ async function textToSpeechOpenAI(
     model: 'tts-1',
     voice,
     input: text,
+    speed: 0.92,
   });
 
   const buffer = Buffer.from(await response.arrayBuffer());

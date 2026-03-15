@@ -24,10 +24,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY tsconfig.json ./
+COPY tsconfig.json vite.config.ts ./
 COPY src/ ./src/
 
+# Build TypeScript server + Vite client
 RUN npx tsc
+RUN npx vite build src/client
 
 # ── Production Stage ────────────────────────────────────────────
 FROM node:20-slim AS production
@@ -49,11 +51,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# Copy compiled output
+# Copy compiled server + built client
 COPY --from=builder /app/dist ./dist
-
-# Copy client assets (if they exist)
-COPY src/client/ ./src/client/ 2>/dev/null || true
 
 # Create required directories
 RUN mkdir -p output tmp data

@@ -8,8 +8,8 @@ const root = path.resolve(__dirname, '../..');
 export const config = {
   // ── Server ─────────────────────────────────────────────────────────────
   port: parseInt(process.env.PORT || '3001', 10),
-  /** CORS allowed origin for the frontend */
-  allowedOrigin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
+  /** CORS allowed origin for the frontend (use * when client is served from same origin) */
+  allowedOrigin: process.env.ALLOWED_ORIGIN || (process.env.NODE_ENV === 'production' ? '*' : 'http://localhost:5173'),
   /** Max simultaneous video pipelines (each is CPU+memory heavy) */
   maxConcurrentPipelines: parseInt(process.env.MAX_CONCURRENT_PIPELINES || '2', 10),
 
@@ -25,8 +25,11 @@ export const config = {
   elevenlabsApiKey: process.env.ELEVENLABS_API_KEY || '',
   elevenlabsVoiceId: process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM',
 
-  // ── Image Search (Pixabay) ─────────────────────────────────────────────
+  // ── Image Search ───────────────────────────────────────────────────────
+  // Priority: Pexels → Pixabay → Bing → Wikimedia Commons (no key needed)
+  pexelsApiKey: process.env.PEXELS_API_KEY || '',
   pixabayApiKey: process.env.PIXABAY_API_KEY || '',
+  bingSearchKey: process.env.BING_SEARCH_KEY || '',
 
   // ── Google APIs ────────────────────────────────────────────────────────
   googleVisionKey: process.env.GOOGLE_CLOUD_VISION_KEY || '',
@@ -74,8 +77,8 @@ export function validateConfig(): void {
   if (!config.elevenlabsApiKey) {
     warnings.push('ELEVENLABS_API_KEY not set — TTS will fall back to OpenAI TTS (requires OPENAI_API_KEY)');
   }
-  if (!config.pixabayApiKey) {
-    warnings.push('PIXABAY_API_KEY not set — images will use generated placeholders');
+  if (!config.pexelsApiKey && !config.pixabayApiKey) {
+    warnings.push('PEXELS_API_KEY / PIXABAY_API_KEY not set — images will use Wikimedia Commons (free, no key needed). Set PEXELS_API_KEY for higher quality.');
   }
   if (config.allowedOrigin === 'http://localhost:5173') {
     warnings.push('ALLOWED_ORIGIN is still the default localhost:5173 — set it to your Vercel domain for production');

@@ -6,6 +6,12 @@ import { config } from '../core/config.js';
 import { withTimeout, verifyFileExists, filterExistingFiles } from '../core/utils.js';
 import { validateVideoFile } from './videoValidator.js';
 import type { RenderTimeline, TimelineEntry } from '../core/types.js';
+import { getFfmpegPath, getFfprobePath } from '../core/ffmpegPath.js';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, FPS } from '../rendering/designSystem.js';
+
+// Set fluent-ffmpeg binary paths (supports @ffmpeg-installer fallback)
+ffmpegLib.setFfmpegPath(getFfmpegPath());
+ffmpegLib.setFfprobePath(getFfprobePath());
 
 const log = createLogger({ module: 'ffmpeg' });
 
@@ -13,14 +19,19 @@ const log = createLogger({ module: 'ffmpeg' });
 const FFMPEG_TIMEOUT_MS = 120_000;
 
 // Canonical video format for all clips (ensures concat compatibility)
+// MUST match streamEncoder settings so normalization is a no-op for stream-encoded clips
 const CANONICAL_FORMAT = {
   codec: 'libx264',
-  preset: 'medium',
-  crf: '20',
+  preset: 'ultrafast',
+  crf: '23',
   pixFmt: 'yuv420p',
-  fps: '30',
-  resolution: '1920x1080',
+  fps: String(FPS),
+  width: CANVAS_WIDTH,
+  height: CANVAS_HEIGHT,
+  resolution: `${CANVAS_WIDTH}x${CANVAS_HEIGHT}`,
 } as const;
+
+const SCALE_PAD_FILTER = `scale=${CANONICAL_FORMAT.width}:${CANONICAL_FORMAT.height}:force_original_aspect_ratio=decrease,pad=${CANONICAL_FORMAT.width}:${CANONICAL_FORMAT.height}:(ow-iw)/2:(oh-ih)/2:black`;
 
 // ── File Verification ────────────────────────────────────────────────────────
 // verifyFileExists, filterExistingFiles, and withTimeout are in core/utils.ts
@@ -62,7 +73,7 @@ export function normalizeClip(inputPath: string, outputPath: string): Promise<st
         '-crf', CANONICAL_FORMAT.crf,
         '-pix_fmt', CANONICAL_FORMAT.pixFmt,
         '-r', CANONICAL_FORMAT.fps,
-        '-vf', `scale=${CANONICAL_FORMAT.resolution}:force_original_aspect_ratio=decrease,pad=${CANONICAL_FORMAT.resolution}:(ow-iw)/2:(oh-ih)/2:black`,
+        '-vf', SCALE_PAD_FILTER,
         '-c:a', 'aac',
         '-b:a', '192k',
         '-ar', '44100',
@@ -105,7 +116,7 @@ export function createImageClip(
           '-c:v', CANONICAL_FORMAT.codec,
           '-t', String(durationSeconds),
           '-pix_fmt', CANONICAL_FORMAT.pixFmt,
-          '-vf', `scale=${CANONICAL_FORMAT.resolution}:force_original_aspect_ratio=decrease,pad=${CANONICAL_FORMAT.resolution}:(ow-iw)/2:(oh-ih)/2:black`,
+          '-vf', SCALE_PAD_FILTER,
           '-r', CANONICAL_FORMAT.fps,
         ])
         .output(outputPath)
@@ -166,12 +177,14 @@ export async function overlayAudio(
 
 /**
  * Concatenate multiple video clips in sequence.
- * Re-encodes all clips to canonical format before concat to prevent mismatched codec errors.
+ * When `skipNormalize` is true, clips are assumed to already be in canonical format
+ * (e.g. from the stream encoder) and bypass expensive re-encoding.
  */
 export async function concatenateClips(
   clipPaths: string[],
   outputPath: string,
-  transition: 'crossfade' | 'fade-black' | 'cut' = 'cut'
+  transition: 'crossfade' | 'fade-black' | 'cut' = 'cut',
+  skipNormalize: boolean = false,
 ): Promise<string> {
   if (config.mockMode) {
     log.info('Mock mode: skipping concatenation');
@@ -191,25 +204,32 @@ export async function concatenateClips(
     return outputPath;
   }
 
-  // Normalize all clips to canonical format before concat
-  // This prevents "codec mismatch" and "resolution mismatch" errors
+  let clipsForConcat: string[];
   const concatDir = path.dirname(outputPath);
-  const normalizedClips: string[] = [];
 
-  for (let i = 0; i < validClips.length; i++) {
-    const normalizedPath = path.join(concatDir, `normalized_${i}_${Date.now()}.mp4`);
-    try {
-      await normalizeClip(validClips[i], normalizedPath);
-      normalizedClips.push(normalizedPath);
-    } catch (err) {
-      log.warn({ clip: validClips[i], error: (err as Error).message }, 'Failed to normalize clip, trying raw');
-      normalizedClips.push(validClips[i]); // Fall back to raw clip
+  if (skipNormalize) {
+    // Fast path: all clips are already in canonical format — skip re-encoding
+    log.info({ clips: validClips.length }, 'Skipping normalization (clips already canonical)');
+    clipsForConcat = validClips;
+  } else {
+    // Slow path: normalize all clips to canonical format before concat
+    // This prevents "codec mismatch" and "resolution mismatch" errors
+    clipsForConcat = [];
+    for (let i = 0; i < validClips.length; i++) {
+      const normalizedPath = path.join(concatDir, `normalized_${i}_${Date.now()}.mp4`);
+      try {
+        await normalizeClip(validClips[i], normalizedPath);
+        clipsForConcat.push(normalizedPath);
+      } catch (err) {
+        log.warn({ clip: validClips[i], error: (err as Error).message }, 'Failed to normalize clip, trying raw');
+        clipsForConcat.push(validClips[i]); // Fall back to raw clip
+      }
     }
   }
 
   // Write concat file list
   const listPath = path.join(concatDir, `concat_${Date.now()}.txt`);
-  const listContent = normalizedClips.map((p) => `file '${p}'`).join('\n');
+  const listContent = clipsForConcat.map((p) => `file '${p}'`).join('\n');
   await fs.writeFile(listPath, listContent);
 
   const promise = new Promise<string>((resolve, reject) => {
@@ -221,10 +241,11 @@ export async function concatenateClips(
       .on('end', async () => {
         // Cleanup temporary files
         await fs.unlink(listPath).catch(() => {});
-        for (let i = 0; i < normalizedClips.length; i++) {
-          // Only delete if it differs from the original (i.e. was actually normalized)
-          if (normalizedClips[i] !== validClips[i]) {
-            await fs.unlink(normalizedClips[i]).catch(() => {});
+        if (!skipNormalize) {
+          for (let i = 0; i < clipsForConcat.length; i++) {
+            if (clipsForConcat[i] !== validClips[i]) {
+              await fs.unlink(clipsForConcat[i]).catch(() => {});
+            }
           }
         }
         resolve(outputPath);
@@ -261,21 +282,21 @@ export async function kenBurnsEffect(
     throw new Error(`Image file not found for Ken Burns: ${imagePath}`);
   }
 
-  const totalFrames = durationSeconds * 30;
+  const totalFrames = durationSeconds * FPS;
   let filter: string;
 
   switch (direction) {
     case 'zoom-in':
-      filter = `scale=8000:-1,zoompan=z='min(zoom+0.001,1.5)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=30`;
+      filter = `scale=8000:-1,zoompan=z='min(zoom+0.001,1.5)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${CANVAS_WIDTH}x${CANVAS_HEIGHT}:fps=${FPS}`;
       break;
     case 'zoom-out':
-      filter = `scale=8000:-1,zoompan=z='if(lte(zoom,1.0),1.5,max(1.001,zoom-0.001))':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=30`;
+      filter = `scale=8000:-1,zoompan=z='if(lte(zoom,1.0),1.5,max(1.001,zoom-0.001))':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${CANVAS_WIDTH}x${CANVAS_HEIGHT}:fps=${FPS}`;
       break;
     case 'pan-left':
-      filter = `scale=3840:-1,zoompan=z='1.1':d=${totalFrames}:x='iw-iw/zoom-(iw-iw/zoom)*on/${totalFrames}':y='0':s=1920x1080:fps=30`;
+      filter = `scale=3840:-1,zoompan=z='1.1':d=${totalFrames}:x='iw-iw/zoom-(iw-iw/zoom)*on/${totalFrames}':y='0':s=${CANVAS_WIDTH}x${CANVAS_HEIGHT}:fps=${FPS}`;
       break;
     case 'pan-right':
-      filter = `scale=3840:-1,zoompan=z='1.1':d=${totalFrames}:x='(iw-iw/zoom)*on/${totalFrames}':y='0':s=1920x1080:fps=30`;
+      filter = `scale=3840:-1,zoompan=z='1.1':d=${totalFrames}:x='(iw-iw/zoom)*on/${totalFrames}':y='0':s=${CANVAS_WIDTH}x${CANVAS_HEIGHT}:fps=${FPS}`;
       break;
   }
 
@@ -327,7 +348,8 @@ export async function buildFinalVideo(timeline: RenderTimeline): Promise<string>
 
         if (validVisuals.length > 0) {
           const visualClip = path.join(sceneDir, `scene_${entry.sceneId}_visual.mp4`);
-          await concatenateClips(validVisuals, visualClip);
+          // skipNormalize: stream-encoded clips are already in canonical format
+          await concatenateClips(validVisuals, visualClip, 'cut', true);
           await overlayAudio(visualClip, entry.audioPath, clipPath);
         } else {
           // All visuals missing — create black clip with audio
@@ -369,8 +391,9 @@ export async function buildFinalVideo(timeline: RenderTimeline): Promise<string>
     'Scene clips ready, concatenating final video'
   );
 
-  // Concatenate all scene clips (normalizeClip happens inside concatenateClips)
-  await concatenateClips(sceneClips, timeline.outputPath);
+  // Concatenate all scene clips — skip normalization since all clips are
+  // already in canonical format from the stream encoder pipeline
+  await concatenateClips(sceneClips, timeline.outputPath, 'cut', true);
 
   // Final output validation
   const validation = await validateVideoFile(timeline.outputPath);

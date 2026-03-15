@@ -178,6 +178,53 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
+/**
+ * Draw text clamped to a maximum height — lines that exceed maxHeight
+ * are truncated and the last visible line gets an ellipsis.
+ */
+export function drawTextClamped(
+  rc: RenderContext,
+  text: string,
+  x: number,
+  y: number,
+  style: TextStyle,
+  maxHeight: number
+): number {
+  const { ctx } = rc;
+  ctx.save();
+
+  ctx.font = style.font;
+  ctx.fillStyle = style.color;
+  ctx.textAlign = style.align || 'left';
+
+  if (style.shadow) {
+    ctx.shadowColor = effects.textShadow.color;
+    ctx.shadowBlur = effects.textShadow.blur;
+    ctx.shadowOffsetX = effects.textShadow.offsetX;
+    ctx.shadowOffsetY = effects.textShadow.offsetY;
+  }
+
+  const maxWidth = style.maxWidth || layout.maxTextWidth;
+  const lineH = style.lineHeight || layout.lineHeight;
+  const lines = wrapText(ctx, text, maxWidth);
+  const fontSize = parseInt(style.font.match(/\d+/)?.[0] || '28');
+  const actualLineHeight = fontSize * lineH;
+  const maxLines = Math.max(1, Math.floor(maxHeight / actualLineHeight));
+
+  const visibleLines = lines.slice(0, maxLines);
+  if (lines.length > maxLines && visibleLines.length > 0) {
+    // Truncate last line and add ellipsis
+    visibleLines[visibleLines.length - 1] = visibleLines[visibleLines.length - 1].replace(/\s*$/, '…');
+  }
+
+  for (let i = 0; i < visibleLines.length; i++) {
+    ctx.fillText(visibleLines[i], x, y + i * actualLineHeight);
+  }
+
+  ctx.restore();
+  return visibleLines.length * actualLineHeight;
+}
+
 /** Measure text height (with wrapping) */
 export function measureTextHeight(
   rc: RenderContext,
@@ -633,48 +680,15 @@ export function drawConnectorArrow(
  * highlighting the current segment with a filled pill.
  */
 export function drawSegmentIndicator(
-  rc: RenderContext,
-  y: number,
-  totalSegments: number,
-  currentSegment: number,
-  segmentProgress: number,
-  options: { color?: string; height?: number } = {}
+  _rc: RenderContext,
+  _y: number,
+  _totalSegments: number,
+  _currentSegment: number,
+  _segmentProgress: number,
+  _options: { color?: string; height?: number } = {}
 ): void {
-  const { ctx, width, scheme } = rc;
-  const barColor = options.color ?? scheme.accent;
-  const h = options.height ?? 6;
-  const startX = layout.margin.x;
-  const barWidth = width - layout.margin.x * 2;
-
-  ctx.save();
-
-  // Track background
-  drawRoundedRect(ctx, startX, y, barWidth, h, h / 2, colors.bg.muted);
-
-  // Segment dividers
-  for (let i = 1; i < totalSegments; i++) {
-    const tickX = startX + (i / totalSegments) * barWidth;
-    ctx.fillStyle = colors.bg.card;
-    ctx.fillRect(tickX - 1, y - 1, 2, h + 2);
-  }
-
-  // Filled progress — up to current segment + progress within it
-  const fillFraction = (currentSegment + segmentProgress) / totalSegments;
-  const fillWidth = Math.max(h, barWidth * Math.min(1, fillFraction));
-  const fillRadius = Math.min(h / 2, fillWidth / 2);
-  drawRoundedRect(ctx, startX, y, fillWidth, h, fillRadius, barColor);
-
-  // Current segment pill indicator
-  const pillX = startX + ((currentSegment + 0.5) / totalSegments) * barWidth;
-  ctx.beginPath();
-  ctx.arc(pillX, y + h / 2, h + 3, 0, Math.PI * 2);
-  ctx.fillStyle = barColor;
-  ctx.fill();
-  ctx.strokeStyle = colors.bg.card;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.restore();
+  // Intentionally a no-op — the progress bar was distracting in educational videos.
+  // Keeping the function signature so callers don't break.
 }
 
 

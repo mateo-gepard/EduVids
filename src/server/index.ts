@@ -3,12 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { config, validateConfig } from '../core/config.js';
 import { logger } from '../core/logger.js';
 import { checkFfmpeg } from '../services/ffmpeg.js';
 import { projectRoutes } from './routes/projects.js';
 import { projectStore } from './projectStore.js';
 import { sweepStaleTmpFiles } from '../services/cleanup.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Validate required config before accepting any traffic.
 validateConfig();
@@ -18,9 +22,17 @@ const startedAt = Date.now();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
+// In production the client is served from the same origin — allow it automatically.
 const allowedOrigins = config.allowedOrigin.split(',').map(s => s.trim()).filter(Boolean);
 app.use(cors({
-  origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (same-origin, curl, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
 }));
 app.use(express.json({ limit: '10mb' }));
 
@@ -62,6 +74,19 @@ fs.mkdirSync(config.outputDir, { recursive: true });
 // Apply rate limit only to POST (video creation), not to GET status/progress/download.
 app.post('/api/projects', videoGenerationLimiter);
 app.use('/api/projects', projectRoutes);
+
+// ── Static files (production) ────────────────────────────────────────────────
+// In production, serve the Vite-built client. In dev, Vite dev server handles it.
+const clientDir = path.resolve(__dirname, '../../dist/client');
+if (fs.existsSync(clientDir)) {
+  app.use(express.static(clientDir));
+  // SPA fallback: serve index.html for any non-API route
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(clientDir, 'index.html'));
+  });
+  logger.info({ clientDir }, 'Serving static client files');
+}
 
 // ── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', async (_req, res) => {

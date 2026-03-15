@@ -14,6 +14,7 @@ import {
 } from '../rendering/renderer.js';
 import { fontString, colors, layout, CANVAS_WIDTH, CANVAS_HEIGHT } from '../rendering/designSystem.js';
 import { getActiveSegment, findSegmentsByCuePrefix } from '../rendering/narrationSegmenter.js';
+import type { CueKeyword } from '../rendering/sttSync.js';
 import type { SubAgentInput, SubAgentOutput, SceneType } from '../core/types.js';
 
 interface KenBurnsPlan {
@@ -32,8 +33,8 @@ export class KenBurnsAgent extends BaseAgent {
 
     const maxWords = this.estimateWordCount(input.sceneSpec.timeBudget);
     const isGerman = input.language === 'de';
-    const plan = await this.generatePlanJSON<KenBurnsPlan>(
-      isGerman
+    const directed = this.getDirectedScript(input);
+    let planPrompt = isGerman
         ? `Erstelle eine Ken-Burns-Szene (langsamer Zoom/Schwenk über ein historisches Bild).
 
 Thema: ${input.sceneSpec.content}
@@ -45,9 +46,10 @@ Respond as JSON:
   "script": "Atmosphärischer Narrations-Text...",
   "imageQuery": "Suchbegriff für Google Images",
   "captions": [{"text": "Kurze Beschriftung 1", "timestamp": 2}, ...],
-  "era": "1939-1945",
+  "era": "(korrekte Jahreszahl oder Zeitraum passend zum Thema, z.B. '1905' oder '1915-1920')",
   "direction": "zoom-in"
-}`
+}
+WICHTIG: Das "era" Feld MUSS den tatsächlichen historischen Zeitraum des Themas widerspiegeln. Verwende NICHT einfach ein Beispiel.`
         : `Create a Ken Burns scene (slow zoom/pan over a historical image).
 
 Topic: ${input.sceneSpec.content}
@@ -59,9 +61,13 @@ Respond as JSON:
   "script": "Atmospheric narration text...",
   "imageQuery": "Search term for Google Images",
   "captions": [{"text": "Short caption 1", "timestamp": 2}, ...],
-  "era": "1939-1945",
+  "era": "(correct year or year range matching the topic, e.g. '1905' or '1915-1920')",
   "direction": "zoom-in"
-}`,
+}
+IMPORTANT: The "era" field MUST reflect the actual historical time period of the topic. Do NOT just copy an example value.`;
+    if (directed) planPrompt = this.withDirectedScript(planPrompt, directed, isGerman);
+    const plan = await this.generatePlanJSON<KenBurnsPlan>(
+      planPrompt,
       isGerman
         ? 'Du bist ein atmosphärischer Geschichten-Erzähler mit Expertise in visueller Narration.'
         : 'You are an atmospheric storyteller with expertise in visual narration.'
@@ -76,8 +82,16 @@ Respond as JSON:
       plan.imageQuery, input.workDir, 'kenburns_image'
     );
 
-    // ── Segment-driven timeline ──
-    const segments = await this.segmentScript(plan.script, duration, 'ken-burns', input.language);
+    // ── STT-synced segmentation ──
+    const cueKeywords: CueKeyword[] = [
+      { visualCue: 'establish_scene', triggerPhrase: plan.script.split(' ').slice(0, 3).join(' ') },
+      ...plan.captions.map((c, i) => ({
+        visualCue: `caption:${i}`,
+        triggerPhrase: c.text.split(' ').slice(0, 3).join(' '),
+      })),
+      { visualCue: 'fade_out', triggerPhrase: plan.script.split('.').pop()?.trim().split(' ').slice(0, 3).join(' ') || 'end' },
+    ];
+    const { segments } = await this.segmentScriptWithSTT(plan.script, audio.filePath, duration, cueKeywords);
     const timeline = this.buildTimelineFromSegments(segments, duration);
 
     // Ken Burns zoom factor (continuous across full duration)
@@ -165,9 +179,12 @@ Respond as JSON:
         drawSceneTypeBadge(rc, '🖼️ Ken Burns');
 
         // Era stamp (typewriter, synced to establish_scene)
-        if (era) {
+        // Only render if era is a valid year or year range (e.g. "1945" or "1939-1945")
+        const validEra = era && /^\d{4}(\s*[-–]\s*\d{4})?$/.test(era.trim());
+        if (validEra) {
+          const cleanEra = era!.trim();
           const revealProgress = anim.revealProgress ?? 1;
-          const eraText = era.slice(0, Math.floor(era.length * revealProgress));
+          const eraText = cleanEra.slice(0, Math.floor(cleanEra.length * revealProgress));
           ctx.save();
           ctx.font = fontString('code', 'md');
           ctx.fillStyle = scheme.accent;
@@ -181,23 +198,28 @@ Respond as JSON:
           ctx.restore();
         }
 
-        // Floating captions — synced to segment timing
+        // Floating captions — compact card, synced to segment timing
         for (let i = 0; i < captions.length; i++) {
           const capOpacity = anim[`cap${i}Opacity`] ?? 0;
           const capOffsetY = anim[`cap${i}OffsetY`] ?? 20;
           if (capOpacity > 0.01) {
             ctx.save();
             ctx.globalAlpha = capOpacity;
-            const capY = height * 0.7 + capOffsetY;
-            drawRoundedRect(ctx, layout.margin.x, capY, width - layout.margin.x * 2, 50, 10,
-              'rgba(255, 255, 255, 0.92)');
+            // Measure text to size the card to content, not full-width
+            ctx.font = fontString('body', 'sm');
+            const textW = Math.min(ctx.measureText(captions[i].text).width + 48, width * 0.6);
+            const cardH = 56;
+            const cardX = layout.margin.x + 20;
+            const capY = height * 0.72 + capOffsetY;
+            drawRoundedRect(ctx, cardX, capY, textW, cardH, 12,
+              'rgba(0, 0, 0, 0.7)');
             // Accent left border
             ctx.fillStyle = scheme.accent;
-            ctx.fillRect(layout.margin.x, capY, 4, 50);
-            drawText(rc, captions[i].text, layout.margin.x + 20, capY + 12, {
+            drawRoundedRect(ctx, cardX, capY, 4, cardH, 2, scheme.accent);
+            drawText(rc, captions[i].text, cardX + 18, capY + 14, {
               font: fontString('body', 'sm'),
-              color: colors.text.primary,
-              maxWidth: width - layout.margin.x * 2 - 40,
+              color: '#FFFFFF',
+              maxWidth: textW - 36,
             });
             ctx.restore();
           }

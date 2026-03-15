@@ -9,7 +9,7 @@ import {
 } from './designSystem.js';
 import {
   type RenderContext,
-  drawBackground, drawText, drawTextRevealed, drawCard,
+  drawBackground, drawText, drawTextClamped, drawTextRevealed, drawCard,
   drawRoundedRect, drawBadge, drawSceneTypeBadge,
   drawDivider, drawImage, drawProgressBar,
   drawNumberCircle, drawKeywordPill, drawCalloutBox,
@@ -48,8 +48,8 @@ export function renderTitleLayout(
   }
 
   // Title — large, bold, centered, dark text
-  const titleOpacity = anim.opacity ?? 1;
-  const titleOffsetY = anim.offsetY ?? 0;
+  const titleOpacity = anim.titleOpacity ?? 1;
+  const titleOffsetY = anim.titleOffsetY ?? 0;
   ctx.save();
   ctx.globalAlpha = Math.max(0, Math.min(1, titleOpacity));
 
@@ -150,12 +150,12 @@ export function renderBulletListLayout(
     ctx.textAlign = 'left';
     ctx.fillText(item.icon, layout.margin.x + 82 + itemOffsetX, itemY + 22);
 
-    // Text
-    drawText(rc, item.text, layout.margin.x + 124 + itemOffsetX, itemY + 24, {
+    // Text — clamp to card height
+    drawTextClamped(rc, item.text, layout.margin.x + 124 + itemOffsetX, itemY + 24, {
       font: fontString('body', 'sm'),
       color: colors.text.primary,
       maxWidth: layout.contentWidth - 180,
-    });
+    }, itemHeight - 38);
 
     ctx.restore();
   }
@@ -256,12 +256,12 @@ export function renderQuizLayout(
       fontSize: 'sm',
     });
 
-    // Option text
-    drawText(rc, data.options[i], sx + 90, cy + (cardH - 30) / 2, {
+    // Option text — clamp to card height
+    drawTextClamped(rc, data.options[i], sx + 90, cy + (cardH - 30) / 2, {
       font: fontString('body', 'sm'),
       color: textCol,
       maxWidth: sw - 130,
-    });
+    }, cardH - 30);
 
     // Checkmark for correct answer
     if ((phase === 'reveal' || phase === 'explanation') && i === data.correctIndex) {
@@ -325,15 +325,23 @@ export function renderStepLayout(
     color: colors.text.primary,
   });
 
-  // Step cards — vertically stacked
+  // Step cards — vertically stacked, focused view (show nearby steps only)
   const stepStartY = layout.margin.y + 130;
   const maxSteps = Math.min(data.steps.length, 6);
-  // Dynamic spacing based on step count
-  const availableH = height - stepStartY - layout.margin.y - 50; // leave room for progress bar
-  const stepSpacing = Math.min(130, availableH / maxSteps);
+  const availableH = height - stepStartY - layout.margin.y - 50;
 
-  for (let i = 0; i < maxSteps; i++) {
-    const sy = stepStartY + i * stepSpacing;
+  // Show at most 4 steps at a time to give each enough space
+  const visibleWindow = 4;
+  // Decide which slice is visible: center around active step
+  let firstVisible = Math.max(0, activeStep - 1);
+  if (firstVisible + visibleWindow > maxSteps) firstVisible = Math.max(0, maxSteps - visibleWindow);
+  const lastVisible = Math.min(firstVisible + visibleWindow, maxSteps);
+  const visibleCount = lastVisible - firstVisible;
+  const stepSpacing = visibleCount > 0 ? Math.min(180, availableH / visibleCount) : 130;
+
+  for (let vi = 0; vi < visibleCount; vi++) {
+    const i = firstVisible + vi;
+    const sy = stepStartY + vi * stepSpacing;
     const isActive = i === activeStep;
     const isCompleted = i < completedSteps;
     const isFuture = !isActive && !isCompleted;
@@ -352,7 +360,7 @@ export function renderStepLayout(
     });
 
     // Connecting line to next step
-    if (i < maxSteps - 1) {
+    if (vi < visibleCount - 1) {
       ctx.save();
       ctx.strokeStyle = isCompleted ? colors.accent.green : colors.bg.muted;
       ctx.lineWidth = 2;
@@ -385,18 +393,18 @@ export function renderStepLayout(
 
     // Step title
     drawText(rc, data.steps[i].title, contentX + 20, sy + 12, {
-      font: fontString('bold', 'sm'),
+      font: fontString('bold', 'xs'),
       color: isActive ? scheme.accent : isCompleted ? colors.accent.green : colors.text.muted,
       maxWidth: contentW - 40,
     });
 
-    // Step content (only for active/completed)
+    // Step content (only for active/completed) — use remaining card height
     if (isActive || isCompleted) {
-      drawText(rc, data.steps[i].content, contentX + 20, sy + 48, {
+      drawTextClamped(rc, data.steps[i].content, contentX + 20, sy + 44, {
         font: fontString('body', 'xs'),
         color: colors.text.secondary,
         maxWidth: contentW - 40,
-      });
+      }, contentH - 50);
     }
 
     ctx.restore();
@@ -490,9 +498,12 @@ export function renderFormulaLayout(
   if (data.steps && data.steps.length > 0) {
     const stepsStartY = formulaY + formulaCardH + 170;
     const availableStepH = height - stepsStartY - layout.margin.y;
-    const stepH = Math.min(52, Math.floor(availableStepH / Math.max(data.steps.length, 1)));
+    const stepCount = data.steps.length;
+    // Each step gets a card with enough room for wrapped text
+    const stepH = Math.min(90, Math.floor(availableStepH / Math.max(stepCount, 1)));
+    const cardW = layout.contentWidth - 120;
 
-    for (let i = 0; i < data.steps.length; i++) {
+    for (let i = 0; i < stepCount; i++) {
       const stepOpacity = anim[`step${i}Opacity`] ?? 0;
       if (stepOpacity <= 0) continue;
 
@@ -501,18 +512,20 @@ export function renderFormulaLayout(
 
       const sy = stepsStartY + i * stepH;
 
-      // Step number pill
-      drawNumberCircle(rc, layout.margin.x + 60, sy + 18, 16, i + 1, {
-        bgColor: scheme.accentLight,
-        textColor: scheme.accent,
-        fontSize: 'sm',
+      // Step accent bar
+      drawCard(rc, layout.margin.x + 40, sy, cardW, stepH - 8, {
+        fill: scheme.accentBg,
+        borderColor: scheme.cardBorder,
+        accentSide: 'left',
+        accentColor: scheme.accent,
       });
 
-      // Step text
-      ctx.font = fontString('code', 'sm');
-      ctx.fillStyle = colors.text.primary;
-      ctx.textAlign = 'left';
-      ctx.fillText(data.steps[i], layout.margin.x + 90, sy + 6);
+      // Step text — use drawText for proper word wrapping
+      drawText(rc, data.steps[i], layout.margin.x + 60, sy + 10, {
+        font: fontString('body', 'xs'),
+        color: colors.text.primary,
+        maxWidth: cardW - 50,
+      });
 
       ctx.restore();
     }
@@ -763,12 +776,12 @@ export function renderFunfactLayout(
     radius: 24,
   });
 
-  drawText(rc, data.fact, width / 2, cardY + 50, {
+  drawTextClamped(rc, data.fact, width / 2, cardY + 50, {
     font: fontString('body', 'md'),
     color: colors.text.primary,
     align: 'center',
     maxWidth: cardW - 80,
     lineHeight: 1.6,
-  });
+  }, cardH - 80);
   ctx.restore();
 }

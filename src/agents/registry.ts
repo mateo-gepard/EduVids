@@ -9,6 +9,7 @@ import { StepByStepAgent } from './step-by-step.js';
 import { QuizAgent } from './quiz.js';
 import { FunfactAgent } from './funfact.js';
 import { ZusammenfassungAgent } from './zusammenfassung.js';
+import { DiagramAgent } from './diagram.js';
 
 /**
  * Registry of all available sub-agents, keyed by scene type.
@@ -24,6 +25,7 @@ const agents: Record<SceneType, BaseAgent> = {
   'quiz': new QuizAgent(),
   'funfact': new FunfactAgent(),
   'zusammenfassung': new ZusammenfassungAgent(),
+  'diagram': new DiagramAgent(),
 };
 
 /**

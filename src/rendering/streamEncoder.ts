@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // EduVid AI — Streaming Frame Encoder
-// Pipes canvas frames directly into FFmpeg stdin — no temp PNG files on disk.
+// Pipes raw BGRA pixel data directly into FFmpeg stdin — zero compression.
 //
-// Previous approach: write N PNG files → FFmpeg reads them → delete files
-//   - A 5-min video wrote ~9,000 PNGs (18–54 GB of temp data)
+// Previous approach: canvas.toBuffer('image/png') → pipe PNG to FFmpeg
+//   - PNG compression was the #1 bottleneck (~100-200ms per frame)
 //
-// This approach: canvas.toBuffer('image/png') → pipe to FFmpeg stdin
-//   - Zero disk I/O for frames
-//   - Memory usage stays constant (one frame at a time)
+// Current approach: canvas.toBuffer('raw') → pipe raw BGRA pixels
+//   - Zero compression overhead — just memcpy the pixel buffer
+//   - ~8 MB per frame at 1920×1080, but throughput is not the bottleneck
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { spawn } from 'child_process';
@@ -17,10 +17,12 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, FPS } from './designSystem.js';
 import { createRenderContext, type FrameRenderFn } from './renderer.js';
 import type { AnimatedProperties } from './animations.js';
 import { createLogger } from '../core/logger.js';
+import { getFfmpegPath } from '../core/ffmpegPath.js';
 
 const log = createLogger({ module: 'stream-encoder' });
 
-const ENCODE_TIMEOUT_MS = 300_000; // 5 minutes max per scene
+const ENCODE_TIMEOUT_BASE_MS = 300_000; // 5 minutes base
+const ENCODE_TIMEOUT_PER_FRAME_MS = 1_000; // +1s per frame for large scenes
 
 export interface StreamEncodeOptions {
   fadeInDuration?: number;
@@ -69,18 +71,20 @@ export async function renderAndEncodeStream(
 
   const args: string[] = [
     '-y',
-    // Video input: PNG images piped to stdin
-    '-f', 'image2pipe',
-    '-vcodec', 'png',
+    // Video input: raw BGRA pixels piped to stdin (no PNG compression overhead)
+    '-f', 'rawvideo',
+    '-pix_fmt', 'bgra',
+    '-s', `${CANVAS_WIDTH}x${CANVAS_HEIGHT}`,
     '-r', String(FPS),
     '-i', 'pipe:0',
     // Audio input
     '-i', audioPath,
-    // Video encoding
+    // Video encoding — ultrafast for speed, CRF 23 for good-enough quality
     ...(filters.length > 0 ? ['-vf', filters.join(',')] : []),
     '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', '20',
+    '-preset', 'ultrafast',
+    '-tune', 'animation',
+    '-crf', '23',
     '-pix_fmt', 'yuv420p',
     '-r', String(FPS),
     // Audio encoding
@@ -92,16 +96,17 @@ export async function renderAndEncodeStream(
 
   log.info({ sceneType, totalFrames, durationSeconds, outputPath }, 'Stream-encoding scene');
 
-  const ffmpeg = spawn('ffmpeg', args);
+  const ffmpeg = spawn(getFfmpegPath(), args);
   const stderrChunks: string[] = [];
   ffmpeg.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk.toString()));
 
-  // Set up the timeout
+  // Set up the timeout — scale with frame count so large scenes don't time out
+  const timeoutMs = Math.max(ENCODE_TIMEOUT_BASE_MS, totalFrames * ENCODE_TIMEOUT_PER_FRAME_MS);
   let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutHandle = setTimeout(
-      () => reject(new Error(`Stream encoding timed out after ${ENCODE_TIMEOUT_MS}ms`)),
-      ENCODE_TIMEOUT_MS
+      () => reject(new Error(`Stream encoding timed out after ${timeoutMs}ms`)),
+      timeoutMs
     );
   });
 
@@ -142,11 +147,11 @@ export async function renderAndEncodeStream(
 
         rc.ctx.restore();
 
-        // Get the current frame as a PNG buffer (no disk write)
-        const pngBuffer = rc.canvas.toBuffer('image/png');
+        // Get the current frame as raw BGRA pixels (no compression)
+        const rawBuffer = rc.canvas.toBuffer('raw');
 
         // Write to FFmpeg stdin, respecting backpressure
-        const canContinue = ffmpeg.stdin.write(pngBuffer);
+        const canContinue = ffmpeg.stdin.write(rawBuffer);
         if (!canContinue) {
           await new Promise<void>((resolve, reject) => {
             ffmpeg.stdin.once('drain', resolve);

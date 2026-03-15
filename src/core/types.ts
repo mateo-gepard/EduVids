@@ -14,7 +14,8 @@ export type SceneType =
   | 'step-by-step'
   | 'quiz'
   | 'funfact'
-  | 'zusammenfassung';
+  | 'zusammenfassung'
+  | 'diagram';
 
 /** User-configurable video parameters */
 export interface VideoParams {
@@ -63,6 +64,8 @@ export interface SceneSpec {
   metadata?: Record<string, unknown>;
   /** Visual hints for the rendering engine */
   visualHints?: string;
+  /** Pre-written narration script from the Teacher Director (unified lesson flow) */
+  directedScript?: string;
   /** Order index */
   order: number;
 }

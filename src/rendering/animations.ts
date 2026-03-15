@@ -281,38 +281,44 @@ interface CueAnimation {
 const CUE_ANIMATIONS: Record<string, CueAnimation> = {
   // ─── Generic ───
   'narrate': { properties: {}, easing: easing.linear },
-  'fade_out': { properties: { opacity: [1, 0] }, easing: easing.easeInQuad, duration: 0.4, offset: -0.4 },
+  'fade_out': { properties: { opacity: [1, 0] }, easing: easing.easeInQuad, duration: 0.6, offset: -0.6 },
 
   // ─── Intro ───
-  'title_appear': { properties: { opacity: [0, 1], offsetY: [40, 0] }, easing: easing.easeOutCubic, duration: 0.6 },
-  'subtitle_reveal': { properties: { subOpacity: [0, 1], subOffsetY: [30, 0] }, easing: easing.easeOutCubic, duration: 0.5 },
-  'badge_show': { properties: { badgeOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.4 },
+  'title_appear': { properties: { titleOpacity: [0, 1], titleOffsetY: [40, 0] }, easing: easing.easeOutCubic, duration: 1.0 },
+  'subtitle_reveal': { properties: { subOpacity: [0, 1], subOffsetY: [30, 0] }, easing: easing.easeOutCubic, duration: 0.8 },
+  'badge_show': { properties: { badgeOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
 
   // ─── Formula ───
-  'show_title': { properties: { opacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.5 },
-  'show_formula': { properties: { formulaOpacity: [0, 1], formulaScale: [0.8, 1] }, easing: easing.easeOutBack, duration: 0.6 },
-  'explain_meaning': { properties: { explOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.5 },
+  'show_title': { properties: { opacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
+  'show_formula': { properties: { formulaOpacity: [0, 1], formulaScale: [0.8, 1] }, easing: easing.easeOutBack, duration: 1.0 },
+  'explain_meaning': { properties: { explOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
 
   // ─── Fun Fact ───
-  'tease_fact': { properties: { emojiScale: [0, 1], emojiOpacity: [0, 1] }, easing: easing.easeOutElastic, duration: 0.8 },
-  'show_header': { properties: { headerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.4 },
-  'reveal_fact': { properties: { factOpacity: [0, 1], factScale: [0.85, 1] }, easing: easing.easeOutBack, duration: 0.6 },
+  'tease_fact': { properties: { emojiScale: [0, 1], emojiOpacity: [0, 1] }, easing: easing.easeOutElastic, duration: 1.0 },
+  'show_header': { properties: { headerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
+  'reveal_fact': { properties: { factOpacity: [0, 1], factScale: [0.85, 1] }, easing: easing.easeOutBack, duration: 1.0 },
 
   // ─── Quote ───
-  'introduce': { properties: { quoteMarkOpacity: [0, 1], quoteMarkScale: [0, 1] }, easing: easing.easeOutBack, duration: 0.8 },
+  'introduce': { properties: { quoteMarkOpacity: [0, 1], quoteMarkScale: [0, 1] }, easing: easing.easeOutBack, duration: 1.0 },
   'quote_reveal': { properties: { revealProgress: [0, 1] }, easing: easing.linear },  // uses full segment duration
-  'show_author': { properties: { authorOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
+  'show_author': { properties: { authorOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
 
   // ─── Quiz ───
-  'read_question': { properties: { questionOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.5 },
+  'read_question': { properties: { questionOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
 
   // ─── Ken Burns ───
-  'establish_scene': { properties: { opacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
+  'establish_scene': { properties: { opacity: [0, 1] }, easing: easing.easeOutCubic, duration: 1.0 },
+
+  // ─── Infografik ───
+  'establish': { properties: { opacity: [0, 1] }, easing: easing.easeOutCubic, duration: 1.0 },
+
+  // ─── Diagram ───
+  'diagram_title': { properties: { opacity: [0, 1], offsetY: [30, 0] }, easing: easing.easeOutCubic, duration: 0.8 },
 
   // ─── Summary titles ───
-  'summary_title': { properties: { opacity: [0, 1], underlineProgress: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
-  'closing_message': { properties: { footerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
-  'closing': { properties: { footerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.6 },
+  'summary_title': { properties: { opacity: [0, 1], underlineProgress: [0, 1] }, easing: easing.easeOutCubic, duration: 1.0 },
+  'closing_message': { properties: { footerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
+  'closing': { properties: { footerOpacity: [0, 1] }, easing: easing.easeOutCubic, duration: 0.8 },
 };
 
 /**
@@ -346,18 +352,44 @@ export function buildSegmentTimeline(
       continue;
     }
 
-    // ─── Dynamic indexed cues (bullet:N, reveal_step:N, etc.) ───
-    const indexedMatch = cue.match(/^(bullet|reveal_step|complete_step|reveal_point|derivation_step|caption|show_options):(\d+)$/);
+    // ─── Dynamic indexed cues (bullet:N, reveal_step:N, keyword:N, etc.) ───
+    const indexedMatch = cue.match(/^(bullet|reveal_step|complete_step|reveal_point|derivation_step|caption|show_options|keyword|diagram_el):(\d+)$/);
     if (indexedMatch) {
       const [, cueType, idxStr] = indexedMatch;
       const idx = parseInt(idxStr);
 
       switch (cueType) {
+        case 'diagram_el':
+          // Diagram element reveal — scale + fade in
+          timeline.add({
+            startTime: segStart,
+            duration: 0.6,
+            easing: easing.easeOutCubic,
+            properties: {
+              [`diag${idx}Opacity`]: [0, 1],
+              [`diag${idx}Scale`]: [0.8, 1],
+            },
+          });
+          break;
+
+        case 'keyword':
+          // Keyword reveal — infografik uses segment timing directly, but
+          // we still expand a property for fallback/compatibility
+          timeline.add({
+            startTime: segStart,
+            duration: 0.8,
+            easing: easing.easeOutCubic,
+            properties: {
+              [`kw${idx}Opacity`]: [0, 1],
+            },
+          });
+          break;
+
         case 'bullet':
         case 'reveal_point':
           timeline.add({
             startTime: segStart,
-            duration: 0.5,
+            duration: 0.8,
             easing: easing.easeOutCubic,
             properties: {
               [`item${idx}Opacity`]: [0, 1],
@@ -398,14 +430,14 @@ export function buildSegmentTimeline(
         case 'caption':
           timeline.add({
             startTime: segStart,
-            duration: 0.5,
+            duration: 0.8,
             easing: easing.easeOutCubic,
             properties: { [`cap${idx}Opacity`]: [0, 1], [`cap${idx}OffsetY`]: [20, 0] },
           });
           // Auto-fade after segment
           timeline.add({
             startTime: segment.estimatedEnd,
-            duration: 0.4,
+            duration: 0.6,
             easing: easing.easeInQuad,
             properties: { [`cap${idx}Opacity`]: [1, 0] },
           });

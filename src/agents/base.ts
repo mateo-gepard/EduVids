@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { getFfmpegPath } from '../core/ffmpegPath.js';
 
 const execFileAsync = promisify(execFile);
 import { createLogger } from '../core/logger.js';
@@ -18,6 +19,7 @@ import { probeAudioDuration } from '../services/videoValidator.js';
 import { AnimationTimeline, buildSegmentTimeline, type AnimatedProperties, secondsToFrames, frameToTime } from '../rendering/animations.js';
 import { fontString, FPS } from '../rendering/designSystem.js';
 import { segmentNarration, getActiveSegment } from '../rendering/narrationSegmenter.js';
+import { buildSttSyncedSegments, type CueKeyword, type SttSyncResult } from '../rendering/sttSync.js';
 import type { RenderContext } from '../rendering/renderer.js';
 import type { SubAgentInput, SubAgentOutput, SceneType, AudioResult, ImageResult, NarrationSegment } from '../core/types.js';
 
@@ -101,7 +103,7 @@ export abstract class BaseAgent {
     const audioPath = path.join(input.workDir, 'fallback_audio.mp3');
     try {
       const t = Math.min(5, input.sceneSpec.timeBudget);
-      await execFileAsync('ffmpeg', [
+      await execFileAsync(getFfmpegPath(), [
         '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo',
         '-t', String(t), '-y', audioPath,
       ]);
@@ -206,6 +208,41 @@ IMPORTANT: The script must cover EVERY visual element — every point, every ste
     return generateJSON<T>(prompt, { systemPrompt: systemPrompt ?? defaultPrompt, temperature });
   }
 
+  // ── Directed Script Helpers ───────────────────────────────────────────
+
+  /**
+   * Return the Teacher Director's pre-written script for this scene, if any.
+   */
+  protected getDirectedScript(input: SubAgentInput): string | undefined {
+    return input.sceneSpec.directedScript;
+  }
+
+  /**
+   * Append directed-script instructions to an LLM plan prompt.
+   * Tells the LLM to use the given script verbatim for the "script" field
+   * and to design visual elements to match that narration.
+   */
+  protected withDirectedScript(prompt: string, directedScript: string, isGerman: boolean): string {
+    const instruction = isGerman
+      ? `\n\n## WICHTIG — Vorgegebenes Narrationsskript:
+Verwende EXAKT diesen Text als "script" Feld. Ändere ihn NICHT.
+Gestalte alle visuellen Elemente so, dass sie zu diesem Sprechtext passen.
+
+Vorgegebenes Skript:
+"""
+${directedScript}
+"""`
+      : `\n\n## IMPORTANT — Pre-written Narration Script:
+Use EXACTLY this text as the "script" field. Do NOT modify it.
+Design all visual elements to match this narration.
+
+Pre-written script:
+"""
+${directedScript}
+"""`;
+    return prompt + instruction;
+  }
+
   // ── TTS ──────────────────────────────────────────────────────────────────
 
   protected async synthesizeSpeech(
@@ -306,6 +343,7 @@ IMPORTANT: The script must cover EVERY visual element — every point, every ste
   /**
    * Segment a narration script into timed visual beats.
    * Each segment carries a visualCue that drives the animation timeline.
+   * @deprecated Use segmentScriptWithSTT for real audio-synced timing.
    */
   protected async segmentScript(
     script: string,
@@ -314,6 +352,20 @@ IMPORTANT: The script must cover EVERY visual element — every point, every ste
     language: string = 'en'
   ): Promise<NarrationSegment[]> {
     return segmentNarration(script, durationSeconds, sceneType, language);
+  }
+
+  /**
+   * STT-based segmentation: transcribe the TTS audio with Whisper
+   * to get word-level timestamps, then match visual cue keywords
+   * to real spoken-word times. Falls back to proportional timing on failure.
+   */
+  protected async segmentScriptWithSTT(
+    script: string,
+    audioPath: string,
+    durationSeconds: number,
+    cueKeywords: CueKeyword[],
+  ): Promise<SttSyncResult> {
+    return buildSttSyncedSegments(audioPath, script, durationSeconds, cueKeywords);
   }
 
   /**
@@ -339,8 +391,51 @@ IMPORTANT: The script must cover EVERY visual element — every point, every ste
 
   // ── Utility ──────────────────────────────────────────────────────────────
 
-  /** Estimate word count for a given duration in seconds */
-  protected estimateWordCount(durationSeconds: number, wordsPerMinute: number = 150): number {
-    return Math.max(30, Math.round((durationSeconds / 60) * wordsPerMinute));
+  /**
+   * Estimate word count for a given duration in seconds.
+   * Default 120 WPM accounts for TTS providers that speak at ~160-190 WPM,
+   * providing a buffer so generated scripts are long enough.
+   */
+  protected estimateWordCount(durationSeconds: number, wordsPerMinute: number = 130): number {
+    return Math.max(20, Math.round((durationSeconds / 60) * wordsPerMinute));
+  }
+
+  /**
+   * Synthesize speech with duration-aware retry.
+   * If TTS audio is >20% shorter than the budget, regenerate a longer script and re-synthesize once.
+   */
+  protected async synthesizeSpeechForBudget(
+    script: string,
+    budgetSeconds: number,
+    workDir: string,
+    filename: string,
+    regenerateScript: (targetWords: number) => Promise<string>,
+    voiceId?: string,
+  ): Promise<{ audio: AudioResult; script: string }> {
+    let currentScript = script;
+    let currentAudio = await this.synthesizeSpeech(currentScript, workDir, filename, voiceId);
+
+    // Retry up to 2 times if audio is >30% too short (allow breathing room)
+    for (let retry = 0; retry < 2; retry++) {
+      const shortfall = (budgetSeconds - currentAudio.durationSeconds) / budgetSeconds;
+      if (shortfall <= 0.30 || budgetSeconds <= 8) break;
+
+      const actualWPM = currentScript.split(/\s+/).length / (currentAudio.durationSeconds / 60);
+      const neededWords = Math.ceil((budgetSeconds / 60) * actualWPM * 1.08);
+      this.log.info(
+        { budgetSeconds, actualSeconds: currentAudio.durationSeconds, shortfall: `${Math.round(shortfall * 100)}%`, neededWords, retry: retry + 1 },
+        'Audio too short — regenerating longer script'
+      );
+
+      try {
+        currentScript = await regenerateScript(neededWords);
+        currentAudio = await this.synthesizeSpeech(currentScript, workDir, `${filename}_v${retry + 2}`, voiceId);
+      } catch (err) {
+        this.log.warn({ error: (err as Error).message }, 'Script regeneration failed, keeping previous');
+        break;
+      }
+    }
+
+    return { audio: currentAudio, script: currentScript };
   }
 }

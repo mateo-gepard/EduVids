@@ -7,11 +7,13 @@
 import { v4 as uuid } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
+import { Semaphore } from '../core/semaphore.js';
 import { config } from '../core/config.js';
 import { createLogger } from '../core/logger.js';
 import { analyzeContent } from '../core/reasoning.js';
 import { parseInput } from './inputParser.js';
 import { planStoryboard } from './storyboardPlanner.js';
+import { directTeaching } from './teacherDirector.js';
 import { assembleTimeline } from './timelineAssembler.js';
 import { scoreOutput, scoreCoherence } from './qualityScorer.js';
 import { buildFinalVideo } from '../services/ffmpeg.js';
@@ -30,7 +32,7 @@ const log = createLogger({ module: 'orchestrator' });
 export type ProgressCallback = (event: ProgressEvent) => void;
 
 const MAX_SCENE_RETRIES = 2;
-const CONCURRENCY_LIMIT = 3;
+const CONCURRENCY_LIMIT = 4;
 
 // Scenes shorter than this skip quality-gate scoring (not worth the tokens)
 const QUALITY_GATE_MIN_DURATION = 15;
@@ -147,13 +149,33 @@ export async function orchestrate(
     log.info({ scenes: storyboard.scenes.length, arc: storyboard.narrativeArc }, 'Storyboard finalized');
 
     // ═════════════════════════════════════════════════════════════════════
+    // Step 3.5: Teacher Director — Unified Lesson Narration
+    // ═════════════════════════════════════════════════════════════════════
+    emit('planning', 'Erstelle einheitliches Unterrichtskonzept...', 18);
+    log.info({ projectId }, 'Step 3.5: Teacher Director — writing unified lesson scripts');
+    let directedStoryboard = storyboard;
+    try {
+      directedStoryboard = await directTeaching(storyboard, contentBlocks, input.params);
+      project.storyboard = directedStoryboard;
+      log.info(
+        { budgets: directedStoryboard.scenes.map(s => `${s.type}:${s.timeBudget}s`) },
+        'Teacher Director applied — unified scripts assigned'
+      );
+    } catch (error) {
+      log.warn(
+        { error: (error as Error).message },
+        'Teacher Director failed (non-critical) — scenes will generate their own scripts'
+      );
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
     // Step 4: Parallel Scene Dispatch with Error Isolation
     // ═════════════════════════════════════════════════════════════════════
     emit('rendering', 'Rendere Szenen parallel...', 20);
-    log.info({ projectId, scenes: storyboard.scenes.length }, 'Step 4: Dispatching scenes');
+    log.info({ projectId, scenes: directedStoryboard.scenes.length }, 'Step 4: Dispatching scenes');
 
     const sceneResults = await dispatchScenesWithQuality(
-      storyboard.scenes,
+      directedStoryboard.scenes,
       projectId,
       workDir,
       input,
@@ -187,7 +209,7 @@ export async function orchestrate(
     console.log('  📋 SCENE CONTENT DUMP — Review what the AI generated');
     console.log('═'.repeat(80));
     for (const output of outputs) {
-      const scene = storyboard.scenes.find(s => s.id === output.sceneId);
+      const scene = directedStoryboard.scenes.find(s => s.id === output.sceneId);
       const scriptPreview = output.script.length > 120
         ? output.script.slice(0, 117) + '...'
         : output.script;
@@ -216,7 +238,7 @@ export async function orchestrate(
         const coherence = await scoreCoherence(
           outputs.map((o, i) => ({
             type: o.sceneType,
-            title: storyboard.scenes.find(s => s.id === o.sceneId)?.title || `Scene ${i + 1}`,
+            title: directedStoryboard.scenes.find(s => s.id === o.sceneId)?.title || `Scene ${i + 1}`,
             script: o.script,
           }))
         );
@@ -243,7 +265,7 @@ export async function orchestrate(
     // ═════════════════════════════════════════════════════════════════════
     emit('compositing', 'Erstelle finales Video...', 88);
     log.info({ projectId }, 'Step 6: Assembling timeline');
-    const timeline = await assembleTimeline(storyboard, outputs);
+    const timeline = await assembleTimeline(directedStoryboard, outputs);
     project.timeline = timeline;
 
     emit('compositing', 'FFmpeg-Rendering...', 92);
@@ -284,7 +306,9 @@ export async function orchestrate(
 
 /**
  * Dispatch scenes with bounded parallelism and quality-gate retries.
- * Uses executeSafe() so one scene crash never kills the batch.
+ * Uses a semaphore-based work-stealing pool — all scenes launch immediately
+ * and compete for CONCURRENCY_LIMIT slots, so fast scenes never idle waiting
+ * for slow ones in the same batch.
  */
 async function dispatchScenesWithQuality(
   scenes: SceneSpec[],
@@ -295,24 +319,23 @@ async function dispatchScenesWithQuality(
 ): Promise<SceneResult[]> {
   const totalScenes = scenes.length;
   const results: SceneResult[] = new Array(totalScenes);
+  const sem = new Semaphore(CONCURRENCY_LIMIT);
 
-  // Process in batches for bounded parallelism
-  for (let batchStart = 0; batchStart < totalScenes; batchStart += CONCURRENCY_LIMIT) {
-    const batchEnd = Math.min(batchStart + CONCURRENCY_LIMIT, totalScenes);
-    const batch = scenes.slice(batchStart, batchEnd);
-
-    const batchPromises = batch.map(async (scene, batchIdx) => {
-      const globalIdx = batchStart + batchIdx;
+  const scenePromises = scenes.map(async (scene, globalIdx) => {
+    await sem.acquire();
+    try {
       const progress = 20 + Math.round((globalIdx / totalScenes) * 60);
       const sceneName = `${scene.type}: ${scene.title}`;
       emit('rendering', `Szene ${globalIdx + 1}/${totalScenes}: ${sceneName}`, progress, sceneName);
 
       const result = await executeSceneWithRetry(scene, projectId, workDir, input, globalIdx);
       results[globalIdx] = result;
-    });
+    } finally {
+      sem.release();
+    }
+  });
 
-    await Promise.all(batchPromises);
-  }
+  await Promise.all(scenePromises);
 
   return results;
 }
