@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { BaseAgent } from './base.js';
+import { loadImage } from 'canvas';
 import { easing } from '../rendering/animations.js';
 import {
   drawBackground, drawSolidBackground, drawText,
@@ -106,16 +107,50 @@ Respond as JSON:
     const era = plan.era;
     const captionSegments = findSegmentsByCuePrefix(segments, 'caption:');
 
+    // Pre-load the downloaded image for actual Ken Burns rendering
+    let kenBurnsImage: Awaited<ReturnType<typeof loadImage>> | null = null;
+    if (imagePath) {
+      try {
+        kenBurnsImage = await loadImage(imagePath);
+      } catch (e) {
+        this.log.warn({ error: (e as Error).message }, 'Failed to load Ken Burns image, using gradient fallback');
+      }
+    }
+
     const videoPath = await this.renderScene('ken-burns', duration, input.workDir, audio.filePath,
       (rc, anim) => {
         const { ctx, width, height, scheme } = rc;
 
-        // Dark cinematic background — using the proper function now
-        drawSolidBackground(rc, colors.bg.primary, true);
-
-        // Simulated Ken Burns effect
+        // Draw actual image with Ken Burns zoom/pan, or fallback to gradient
         const zoom = anim.zoomFactor ?? 1;
         const panX = anim.panX ?? 0;
+
+        if (kenBurnsImage) {
+          ctx.save();
+          const cx = width / 2;
+          const cy = height / 2;
+          ctx.translate(cx + panX, cy);
+          ctx.scale(zoom, zoom);
+          ctx.translate(-cx, -cy);
+
+          // Cover-fit image to canvas
+          const imgAspect = kenBurnsImage.width / kenBurnsImage.height;
+          const canvasAspect = width / height;
+          let dw: number, dh: number, dx: number, dy: number;
+          if (imgAspect > canvasAspect) {
+            dh = height;
+            dw = height * imgAspect;
+          } else {
+            dw = width;
+            dh = width / imgAspect;
+          }
+          dx = (width - dw) / 2;
+          dy = (height - dh) / 2;
+          ctx.drawImage(kenBurnsImage, dx, dy, dw, dh);
+          ctx.restore();
+        } else {
+          drawSolidBackground(rc, colors.bg.primary, true);
+        }
 
         // Vignette overlay
         const vignette = ctx.createRadialGradient(

@@ -51,8 +51,7 @@ export const easing = {
  */
 function sanitizeValue(value: number, fallback: number = 0): number {
   if (!isFinite(value) || isNaN(value)) return fallback;
-  // Clamp to prevent extreme canvas operations (elastic/back can overshoot)
-  return Math.max(-10, Math.min(10, value));
+  return value;
 }
 
 // ── Interpolation ────────────────────────────────────────────────────────────

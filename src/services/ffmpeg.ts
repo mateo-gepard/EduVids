@@ -1,5 +1,3 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import ffmpegLib from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import path from 'path';
@@ -13,7 +11,6 @@ const log = createLogger({ module: 'ffmpeg' });
 
 // Default timeout for FFmpeg processes (2 minutes)
 const FFMPEG_TIMEOUT_MS = 120_000;
-const execAsync = promisify(exec);
 
 // Canonical video format for all clips (ensures concat compatibility)
 const CANONICAL_FORMAT = {
@@ -391,8 +388,6 @@ export async function buildFinalVideo(timeline: RenderTimeline): Promise<string>
   return timeline.outputPath;
 }
 
-// exec/promisify imports moved to top of file
-
 /**
  * Create a black video clip of specified duration.
  */
@@ -402,12 +397,19 @@ async function createBlackClip(outputPath: string, durationSeconds: number): Pro
     return outputPath;
   }
 
-  try {
-    const cmd = `ffmpeg -f lavfi -i color=black:s=${CANONICAL_FORMAT.resolution}:r=${CANONICAL_FORMAT.fps} -c:v ${CANONICAL_FORMAT.codec} -t ${durationSeconds} -pix_fmt ${CANONICAL_FORMAT.pixFmt} -y "${outputPath}"`;
-    await execAsync(cmd);
-    return outputPath;
-  } catch (err) {
-    throw new Error(`FFmpeg black clip error: ${(err as Error).message}`);
-  }
+  return new Promise<string>((resolve, reject) => {
+    ffmpegLib()
+      .input(`color=black:s=${CANONICAL_FORMAT.resolution}:r=${CANONICAL_FORMAT.fps}`)
+      .inputFormat('lavfi')
+      .outputOptions([
+        '-c:v', CANONICAL_FORMAT.codec,
+        '-t', String(durationSeconds),
+        '-pix_fmt', CANONICAL_FORMAT.pixFmt,
+      ])
+      .output(outputPath)
+      .on('end', () => resolve(outputPath))
+      .on('error', (err) => reject(new Error(`FFmpeg black clip error: ${err.message}`)))
+      .run();
+  });
 }
 

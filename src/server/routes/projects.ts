@@ -18,6 +18,15 @@ const progressListeners = new Map<string, Set<(event: ProgressEvent) => void>>()
 
 const pipelineSemaphore = new Semaphore(config.maxConcurrentPipelines);
 
+// ── Zod schema for project creation input ────────────────────────────────────
+const createProjectSchema = z.object({
+  text: z.string().max(100_000).optional(),
+  duration: z.coerce.number().int().min(30).max(1800).default(300),
+  difficulty: z.enum(['overview', 'standard', 'deep']).default('standard'),
+  language: z.enum(['de', 'en', 'fr', 'es']).default('de'),
+  voiceId: z.string().optional(),
+});
+
 // ── Helper: broadcast a progress event to all SSE listeners ──────────────
 function broadcast(projectId: string, event: ProgressEvent): void {
   const listeners = progressListeners.get(projectId);
@@ -31,7 +40,14 @@ function broadcast(projectId: string, event: ProgressEvent): void {
 // ── POST /api/projects — Create & start a new project ────────────────────
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const { text, duration, difficulty, language, voiceId } = req.body;
+    const parsed = createProjectSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`);
+      res.status(400).json({ error: 'Invalid input', details: issues });
+      return;
+    }
+
+    const { text, duration, difficulty, language, voiceId } = parsed.data;
     const file = req.file;
 
     // Sanitize free-text input to prevent prompt injection
@@ -42,10 +58,10 @@ router.post('/', upload.single('file'), async (req, res) => {
       pdfPath: file && file.mimetype === 'application/pdf' ? file.path : undefined,
       imagePath: file && file.mimetype.startsWith('image/') ? file.path : undefined,
       params: {
-        duration: parseInt(duration) || 300,
-        durationMinutes: Math.round((parseInt(duration) || 300) / 60),
-        difficulty: difficulty || 'standard',
-        language: language || 'de',
+        duration,
+        durationMinutes: Math.round(duration / 60),
+        difficulty,
+        language,
         voiceId: voiceId || undefined,
       },
     };

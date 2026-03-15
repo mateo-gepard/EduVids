@@ -15,7 +15,6 @@ import { planStoryboard } from './storyboardPlanner.js';
 import { assembleTimeline } from './timelineAssembler.js';
 import { scoreOutput, scoreCoherence } from './qualityScorer.js';
 import { buildFinalVideo } from '../services/ffmpeg.js';
-import { validateVideoFile } from '../services/videoValidator.js';
 import { getAgent } from '../agents/registry.js';
 import type {
   Project,
@@ -252,20 +251,8 @@ export async function orchestrate(
     const outputPath = await buildFinalVideo(timeline);
     project.outputPath = outputPath;
 
-    // Validate final output
-    emit('compositing', 'Validiere finales Video...', 96);
-    const validation = await validateVideoFile(outputPath);
-    if (!validation.valid) {
-      log.warn(
-        { projectId, issues: validation.issues },
-        'Final video has validation issues — delivering anyway'
-      );
-    } else {
-      log.info(
-        { projectId, duration: validation.metadata?.duration, fileSize: validation.metadata?.fileSize },
-        'Final video validated successfully'
-      );
-    }
+    // buildFinalVideo already validates internally — skip redundant call
+    emit('compositing', 'Finalisiere Video...', 96);
 
     // ═════════════════════════════════════════════════════════════════════
     // Cleanup temp work directory

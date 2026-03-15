@@ -3,8 +3,12 @@ import { z, type ZodSchema } from 'zod';
 import { config } from '../core/config.js';
 import { createLogger } from '../core/logger.js';
 import { sleep } from '../core/utils.js';
+import { Semaphore } from '../core/semaphore.js';
 
 const log = createLogger({ module: 'llm' });
+
+// Limit concurrent LLM calls to prevent 429 rate-limit errors
+const llmSemaphore = new Semaphore(5);
 
 // ── OpenAI Client ────────────────────────────────────────────────────────────
 
@@ -73,29 +77,34 @@ export async function generateText(
   // No hardcoded maxTokens default — let the model decide unless caller specifies
   const { temperature = 0.7, maxTokens, systemPrompt, jsonMode } = options;
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const result = await callLLM(prompt, temperature, maxTokens, systemPrompt, jsonMode);
-      return result;
-    } catch (error) {
-      const isRetryable = isRetryableError(error);
-      const isLastAttempt = attempt === MAX_RETRIES - 1;
+  await llmSemaphore.acquire();
+  try {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const result = await callLLM(prompt, temperature, maxTokens, systemPrompt, jsonMode);
+        return result;
+      } catch (error) {
+        const isRetryable = isRetryableError(error);
+        const isLastAttempt = attempt === MAX_RETRIES - 1;
 
-      if (!isRetryable || isLastAttempt) {
-        log.error(
-          { attempt: attempt + 1, retryable: isRetryable, error: (error as Error).message },
-          'LLM call failed (non-retryable or last attempt)'
+        if (!isRetryable || isLastAttempt) {
+          log.error(
+            { attempt: attempt + 1, retryable: isRetryable, error: (error as Error).message },
+            'LLM call failed (non-retryable or last attempt)'
+          );
+          throw error;
+        }
+
+        const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+        log.warn(
+          { attempt: attempt + 1, delay, error: (error as Error).message },
+          'LLM call failed (retrying)'
         );
-        throw error;
+        await sleep(delay);
       }
-
-      const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
-      log.warn(
-        { attempt: attempt + 1, delay, error: (error as Error).message },
-        'LLM call failed (retrying)'
-      );
-      await sleep(delay);
     }
+  } finally {
+    llmSemaphore.release();
   }
 
   throw new Error('LLM call exhausted all retries');

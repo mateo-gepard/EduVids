@@ -5,10 +5,10 @@
 
 import path from 'path';
 import fs from 'fs/promises';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 import { createLogger } from '../core/logger.js';
 import { generateText, generateJSON } from '../services/llm.js';
 import { textToSpeech } from '../services/tts.js';
@@ -44,10 +44,17 @@ export abstract class BaseAgent {
    * so the pipeline can continue without this scene.
    */
   async executeSafe(input: SubAgentInput): Promise<{ output: SubAgentOutput; failed: boolean }> {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error(`Agent timeout after ${AGENT_TIMEOUT_MS}ms for scene ${input.sceneSpec.id}`)),
+          AGENT_TIMEOUT_MS
+        );
+      });
       const output = await Promise.race([
         this.execute(input),
-        this.createTimeout(AGENT_TIMEOUT_MS, input.sceneSpec.id),
+        timeoutPromise,
       ]);
       return { output, failed: false };
     } catch (error) {
@@ -78,13 +85,9 @@ export abstract class BaseAgent {
           failed: true,
         };
       }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
     }
-  }
-
-  private createTimeout(ms: number, sceneId: string): Promise<never> {
-    return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Agent timeout after ${ms}ms for scene ${sceneId}`)), ms)
-    );
   }
 
   /**
@@ -98,7 +101,10 @@ export abstract class BaseAgent {
     const audioPath = path.join(input.workDir, 'fallback_audio.mp3');
     try {
       const t = Math.min(5, input.sceneSpec.timeBudget);
-      await execAsync(`ffmpeg -f lavfi -i anullsrc=r=44100:cl=stereo -t ${t} -y "${audioPath}"`);
+      await execFileAsync('ffmpeg', [
+        '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo',
+        '-t', String(t), '-y', audioPath,
+      ]);
     } catch (e) {
       // Very crude fallback if ffmpeg fails
       await fs.writeFile(audioPath, Buffer.alloc(1024));

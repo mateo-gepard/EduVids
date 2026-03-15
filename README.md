@@ -82,4 +82,4 @@ The output video will be saved in the `output/` directory upon completion.
 - **Video Processing:** `fluent-ffmpeg`, raw native FFmpeg process control, `canvas`
 - **AI/NLP:** OpenAI API
 - **Voice Synthesis:** `google-tts-api`
-- **Frontend UI:** Vite, React
+- **Frontend UI:** Vite, Vanilla JS

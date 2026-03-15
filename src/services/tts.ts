@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import OpenAI from 'openai';
 import { config } from '../core/config.js';
 import { createLogger } from '../core/logger.js';
 import { probeAudioDuration } from '../core/utils.js';
@@ -65,6 +66,42 @@ async function textToSpeechElevenLabs(
   return { filePath: outPath, durationSeconds: safeDuration };
 }
 
+// ── OpenAI TTS fallback ───────────────────────────────────────────────────────
+
+/**
+ * Generate speech via OpenAI TTS API (good quality, uses existing API key).
+ * This is the secondary TTS provider when ElevenLabs is unavailable.
+ */
+async function textToSpeechOpenAI(
+  text: string,
+  outputDir: string,
+  filename: string,
+  language: string
+): Promise<AudioResult> {
+  const outPath = path.join(outputDir, `${filename}.mp3`);
+
+  log.info({ textLength: text.length }, 'Generating OpenAI TTS audio');
+
+  const openai = new OpenAI({ apiKey: config.openaiApiKey });
+  const voice = language === 'de' ? 'nova' : 'alloy';
+  const response = await openai.audio.speech.create({
+    model: 'tts-1',
+    voice,
+    input: text,
+  });
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  await fs.mkdir(outputDir, { recursive: true });
+  await fs.writeFile(outPath, buffer);
+
+  const stats = await fs.stat(outPath);
+  const durationSeconds = await probeAudioDuration(outPath, stats.size) ?? 5;
+  const safeDuration = durationSeconds > 0 && isFinite(durationSeconds) ? durationSeconds : 5;
+
+  log.info({ outPath, durationSeconds: safeDuration }, 'OpenAI TTS audio generated');
+  return { filePath: outPath, durationSeconds: safeDuration };
+}
+
 // ── Google TTS fallback ───────────────────────────────────────────────────────
 
 /**
@@ -118,7 +155,8 @@ async function textToSpeechGoogleFallback(
  * Convert text to speech.
  * Provider priority:
  *   1. ElevenLabs (if ELEVENLABS_API_KEY is set) — high quality, commercial OK
- *   2. Google TTS unofficial (fallback for local dev only)
+ *   2. OpenAI TTS (if OPENAI_API_KEY is set) — good quality, reliable
+ *   3. Google TTS unofficial (last resort for local dev only)
  */
 export async function textToSpeech(
   text: string,
@@ -144,13 +182,24 @@ export async function textToSpeech(
     } catch (error) {
       log.error(
         { error: (error as Error).message },
-        'ElevenLabs TTS failed — falling back to Google TTS'
+        'ElevenLabs TTS failed — falling back to OpenAI TTS'
       );
-      // Fall through to Google TTS
     }
   }
 
-  // Google TTS fallback
+  // OpenAI TTS fallback (reliable, uses existing API key)
+  if (config.openaiApiKey) {
+    try {
+      return await textToSpeechOpenAI(text, outputDir, filename, language);
+    } catch (error) {
+      log.error(
+        { error: (error as Error).message },
+        'OpenAI TTS failed — falling back to Google TTS'
+      );
+    }
+  }
+
+  // Google TTS last resort
   try {
     return await textToSpeechGoogleFallback(text, outputDir, filename, language);
   } catch (error) {

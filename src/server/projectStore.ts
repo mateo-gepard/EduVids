@@ -22,8 +22,9 @@ const IN_FLIGHT_STATUSES = new Set([
   'input-received',
   'parsing',
   'planning',
+  'storyboard-ready',
   'rendering',
-  'assembling',
+  'compositing',
 ]);
 
 class ProjectStore {

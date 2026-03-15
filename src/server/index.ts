@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs';
 import { config, validateConfig } from '../core/config.js';
@@ -16,6 +17,7 @@ const app = express();
 const startedAt = Date.now();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: config.allowedOrigin }));
 app.use(express.json({ limit: '10mb' }));
 
