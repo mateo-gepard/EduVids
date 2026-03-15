@@ -14,8 +14,7 @@ import { sweepStaleTmpFiles } from '../services/cleanup.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Validate required config before accepting any traffic.
-validateConfig();
+let configValid = false;
 
 const app = express();
 const startedAt = Date.now();
@@ -88,12 +87,13 @@ if (fs.existsSync(clientDir)) {
   logger.info({ clientDir }, 'Serving static client files');
 }
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── Health check (registered before validation so it always responds) ────────
 app.get('/api/health', async (_req, res) => {
   const ffmpegOk = await checkFfmpeg();
   res.json({
-    status: 'ok',
+    status: configValid ? 'ok' : 'degraded',
     uptime: Math.round((Date.now() - startedAt) / 1000),
+    configValid,
     mockMode: config.mockMode,
     ffmpeg: ffmpegOk,
     llmProvider: config.llmProvider,
@@ -103,23 +103,32 @@ app.get('/api/health', async (_req, res) => {
 
 // ── Start ────────────────────────────────────────────────────────────────────
 (async () => {
-  // Load persisted projects before accepting traffic so clients never see a
-  // 404 for a project that existed before a restart.
+  // Start listening FIRST so the health-check endpoint responds immediately.
+  // Bind to 0.0.0.0 so Railway's proxy can reach the container.
+  const server = app.listen(config.port, '0.0.0.0', () => {
+    logger.info(
+      { port: config.port, mockMode: config.mockMode, allowedOrigin: config.allowedOrigin },
+      `🎬 EduVid AI server running on http://0.0.0.0:${config.port}`
+    );
+  });
+
+  // Validate config after listen — non-fatal so health check keeps working.
+  try {
+    validateConfig();
+    configValid = true;
+  } catch (err: any) {
+    logger.error({ err: err.message }, 'Config validation failed — video generation disabled until env vars are set');
+  }
+
+  if (config.mockMode) {
+    logger.warn('⚠️  Running in MOCK MODE — no real API calls will be made');
+  }
+
+  // Load persisted projects
   await projectStore.init();
 
   // Clean up stale temp files from previous runs (older than 24h)
   await sweepStaleTmpFiles().catch(() => {});
-
-  const server = app.listen(config.port, () => {
-    logger.info(
-      { port: config.port, mockMode: config.mockMode, allowedOrigin: config.allowedOrigin },
-      `🎬 EduVid AI server running on http://localhost:${config.port}`
-    );
-
-    if (config.mockMode) {
-      logger.warn('⚠️  Running in MOCK MODE — no real API calls will be made');
-    }
-  });
 
   // ── Graceful Shutdown ──────────────────────────────────────────────────
   const shutdown = (signal: string) => {
