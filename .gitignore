@@ -6,3 +6,5 @@ tmp/
 *.mp4
 *.mp3
 *.wav
+test-output*.log
+eng.traineddata
