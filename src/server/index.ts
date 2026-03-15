@@ -19,6 +19,17 @@ let configValid = false;
 const app = express();
 const startedAt = Date.now();
 
+// ── Health check — MUST be first so Railway's probe always gets a response ───
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: configValid ? 'ok' : 'degraded',
+    uptime: Math.round((Date.now() - startedAt) / 1000),
+    configValid,
+    mockMode: config.mockMode,
+    llmProvider: config.llmProvider,
+  });
+});
+
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 // In production the client is served from the same origin — allow it automatically.
@@ -91,20 +102,6 @@ if (clientDir) {
   });
   logger.info({ clientDir }, 'Serving static client files');
 }
-
-// ── Health check (registered before validation so it always responds) ────────
-app.get('/api/health', async (_req, res) => {
-  const ffmpegOk = await checkFfmpeg();
-  res.json({
-    status: configValid ? 'ok' : 'degraded',
-    uptime: Math.round((Date.now() - startedAt) / 1000),
-    configValid,
-    mockMode: config.mockMode,
-    ffmpeg: ffmpegOk,
-    llmProvider: config.llmProvider,
-    maxConcurrentPipelines: config.maxConcurrentPipelines,
-  });
-});
 
 // ── Start ────────────────────────────────────────────────────────────────────
 (async () => {
