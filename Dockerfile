@@ -47,12 +47,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     librsvg2-2 \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-# Copy compiled server + built client
+# Copy compiled server + built client + pre-compiled node_modules from builder
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+# Remove dev-only packages to shrink the image
+RUN npm prune --omit=dev
 
 # Create required directories
 RUN mkdir -p output tmp data
